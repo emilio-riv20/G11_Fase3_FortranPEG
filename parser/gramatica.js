@@ -8,6 +8,8 @@
     import { ErrorReglas } from './error.js';
     import { errores } from '../index.js'
     import * as n from '../visitor/CST.js';
+    const labels = new Map()
+
 
 function peg$subclass(child, parent) {
   function C() { this.constructor = child; }
@@ -294,6 +296,7 @@ function peg$parse(input, options) {
     return new n.Union([expr, ...rest]);
   };
   var peg$f5 = function(label, expr, qty) {
+    labels.get(label,expr)
     return new n.Expresion(expr, label, qty);
   };
   var peg$f6 = function(id) {
