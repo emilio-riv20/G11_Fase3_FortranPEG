@@ -12,85 +12,75 @@ export default class Tokenizer extends Visitor {
     generateTokenizer(grammar) {
         return `
 module parser
-implicit none
-
-contains
-
-subroutine parse(input)
-    character(len=:), intent(inout), allocatable :: input
-    character(len=:), allocatable :: lexeme
-    integer :: cursor
-    cursor = 1
-    do while (lexeme /= "EOF" )
-        if(lexeme == "ERROR") THEN 
-            cursor = cursor + 1
-            lexeme = nextSym(input, cursor)
-        else 
-            lexeme = nextSym(input, cursor)
-            
-        end if
-        print *, lexeme
-    end do
-end subroutine parse
-
-function tolower(str) result(lower_str)
-        character(len=*), intent(in) :: str
-        character(len=len(str)) :: lower_str
-        integer :: i
-
-        lower_str = str 
-        do i = 1, len(str)
-            if (iachar(str(i:i)) >= iachar('A') .and. iachar(str(i:i)) <= iachar('Z')) then
-                lower_str(i:i) = achar(iachar(str(i:i)) + 32)
-            end if
-        end do
-end function tolower
-
-function replace_special_characters(input_string) result(output_string)
     implicit none
-    character(len=:), allocatable, intent(in) :: input_string
-    character(len=:), allocatable :: temp_string
-    character(len=:), allocatable :: output_string
-    integer :: i, length
+    integer, private :: cursor
+    character(len=:), allocatable, private :: input, expected
+    contains
+    subroutine parse(str)
+        character(len=:), allocatable, intent(in) :: str
+        input = str
+        cursor = 1
+        expected = ''
+        if (sum()) then
+            print *, "Parsed input succesfully!"
+        else
+            call error()
+        end if
+    end subroutine parse
 
-    temp_string = ""
-    length = len(input_string)
+    subroutine error()
+        if(cursor > len(input))then
+            print *, "Error: Expected "//expected//", but found EOF"
+            call exit(1)
+        end if
+        print *, "Error: Expected "//expected//", but found '"//input(cursor:cursor)//"'"
+        call exit(1)
+    end subroutine error
 
-    do i = 1, length
-        select case (ichar(input_string(i:i)))
-        case (10) ! Nueva línea
-            temp_string = temp_string // '\\n'
-        case (9)  ! Tabulación
-            temp_string = temp_string // '\\t'
-        case (13) ! Retorno de carro
-            temp_string = temp_string // '\\r'
-        case (32) ! Espacio
-            if (input_string(i:i) == " ") then
-                temp_string = temp_string // "_"
-            else
+    function tolower(str) result(lower_str)
+            character(len=*), intent(in) :: str
+            character(len=len(str)) :: lower_str
+            integer :: i
+
+            lower_str = str 
+            do i = 1, len(str)
+                if (iachar(str(i:i)) >= iachar('A') .and. iachar(str(i:i)) <= iachar('Z')) then
+                    lower_str(i:i) = achar(iachar(str(i:i)) + 32)
+                end if
+            end do
+    end function tolower
+
+    function replace_special_characters(input_string) result(output_string)
+        implicit none
+        character(len=:), allocatable, intent(in) :: input_string
+        character(len=:), allocatable :: temp_string
+        character(len=:), allocatable :: output_string
+        integer :: i, length
+
+        temp_string = ""
+        length = len(input_string)
+
+        do i = 1, length
+            select case (ichar(input_string(i:i)))
+            case (10) ! Nueva línea
+                temp_string = temp_string // '\\n'
+            case (9)  ! Tabulación
+                temp_string = temp_string // '\\t'
+            case (13) ! Retorno de carro
+                temp_string = temp_string // '\\r'
+            case (32) ! Espacio
+                if (input_string(i:i) == " ") then
+                    temp_string = temp_string // "_"
+                else
+                    temp_string = temp_string // input_string(i:i)
+                end if
+            case default
                 temp_string = temp_string // input_string(i:i)
-            end if
-        case default
-            temp_string = temp_string // input_string(i:i)
-        end select
-    end do
-    allocate(character(len=len(temp_string)) :: output_string)
-    output_string = temp_string
-end function
-
-function nextSym(input, cursor) result(lexeme)
-    character(len=*), intent(in) :: input
-    integer, intent(inout) :: cursor
-    character(len=:), allocatable :: lexeme
-    character(len=:), allocatable :: buffer 
-    logical :: concat_failed
-    integer :: initialCursor
-
-    if (cursor > len(input)) then
-        allocate( character(len=3) :: lexeme )
-        lexeme = "EOF"
-        return
-    end if
+            end select
+        end do
+        allocate(character(len=len(temp_string)) :: output_string)
+        output_string = temp_string
+    end function
 
     ${(() => {
         let result = '';
@@ -102,9 +92,94 @@ function nextSym(input, cursor) result(lexeme)
         return result;  
     })()}
 
-    print *, "error lexico en col ", cursor, ', "'//input(cursor:cursor)//'"'
-    lexeme = "ERROR"
-end function nextSym
+    function acceptString(str) result(accept)
+        character(len = *), intent(in) :: str
+        logical :: accept
+        integer :: offset
+        character(len=len(str)) :: str_lower
+        character(len=len(str)) :: input_sub
+
+        offset = len(str) - 1
+        str_lower = tolower(str)
+        if (cursor + offset > len(input)) then
+            accept = .false.
+            expected = str
+            return
+        end if
+        input_sub = tolower(input(cursor:cursor + offset))
+        if (str_lower /= input_sub) then
+            accept = .false.
+            expected = str
+            return
+        end if
+        cursor = cursor + len(str)
+        accept = .true.
+    end function acceptString
+
+    function acceptRange(bottom, top) result(accept)
+        character(len=1), intent(in) :: bottom, top
+        logical :: accept
+        character(len=1) :: input_char
+
+        if (cursor > len(input)) then
+            accept = .false.
+            expected = bottom // "-" // top
+            return
+        end if
+
+        input_char = tolower(input(cursor:cursor))
+        if (.not. (input_char >= tolower(bottom) .and. input_char <= tolower(top))) then
+            accept = .false.
+            expected = bottom // "-" // top
+            return
+        end if
+        cursor = cursor + 1
+        accept = .true.
+    end function acceptRange
+
+    function acceptSet(set) result(accept)
+        character(len=1), dimension(:), intent(in) :: set
+        logical :: accept
+        character(len=1), dimension(size(set)) :: set_lower
+        character(len=1) :: input_char
+
+        set_lower = tolower(set)
+        if (cursor > len(input)) then
+            accept = .false.
+            expected = "<SET>"
+            return
+        end if
+        input_char = tolower(input(cursor:cursor))
+        if (.not. (findloc(set_lower, input_char, 1) > 0)) then
+            accept = .false.
+            expected = "<SET>"
+            return
+        end if
+        cursor = cursor + 1
+        accept = .true.
+    end function acceptSet
+
+    function acceptPeriod() result(accept)
+        logical :: accept
+        if (cursor > len(input)) then
+            accept = .false.
+            expected = "<ANYTHING>"
+            return
+        end if
+        cursor = cursor + 1
+        accept = .true.
+    end function acceptPeriod
+
+    function acceptEOF() result(accept)
+        logical :: accept
+        if(.not. cursor > len(input)) then
+            accept = .false.
+            expected = "<EOF>"
+            return
+        end if
+        accept = .true.
+    end function acceptEOF
+
 end module parser 
         `;
     }
@@ -120,145 +195,116 @@ end module parser
 
             this.nameProduction = node.alias? node.alias : '"'+node.id+'"';
             console.log("nameProduction: " + this.nameProduction);
-            return node.expr.accept(this);
+            return `
+    function peg_$${node.id}() result(accept)
+        logical :: accept
+        integer :: i
+        
+        accept = .false.
+        ${node.expr.accept(this)}
+        if(.not. acceptEOF())then
+            return
+        end if 
+        accept = .true.
+    end function peg_$${node.id}
+        `;
+        }else{
+            return `
+    function peg_$${node.id}() result(accept)
+        logical :: accept
+        integer :: i
+        
+        accept = .false.
+        ${node.expr.accept(this)}
+        accept = .true.
+    end function peg_$${node.id}
+                    `;
         }
-
-
-        if (this.calledRules.includes(node.id) && this.pendingRules.includes(node.id)) {
-
-            let index = this.pendingRules.indexOf(node.id);
-
-            if (index !== -1) {
-                this.pendingRules.splice(index, 1);
-            }
-
-            this.nameProduction = node.alias? node.alias : '"'+node.id+'"';
-            //console.log("nameProduction: " + this.nameProduction);
-            return node.expr.accept(this);
-             
-        }
-
-        //console.log("llamadas");
-        //console.log(this.calledRules);
-        //console.log("pendientes");
-        //console.log(this.pendingRules);
-        return '';
     }
+
     visitOpciones(node) {
-        return node.exprs.map((expr) => expr.accept(this)).join('\n');
+        const template = `
+            do i = 1, ${node.exprs.length+1}
+                select case (i)
+                    ${node.exprs.map((expr, i) => `
+                    case (${i})
+                        ${expr.accept(this)}
+                        exit
+                    `).join('')}
+                    case default
+                        return 
+                end select
+            end do
+        `;
+        return template;
     }
     
     visitUnion(node) {
-        const grupos = [];
-        let grupoActual = [];
-        let resultadoFinal = '';
-        let resultadotmp = '';
-        for (let i = 0; i < node.exprs.length; i++) {
-            const expr = node.exprs[i];
-            if (expr.expr instanceof n.String || expr.expr instanceof n.Corchetes || expr.expr instanceof n.Any) { // Si es instancia de String, Corchete o Any, se agrega al grupo
-                grupoActual.push(expr);
-            } else { // Si no, cerramos el grupo y comenzamos uno nuevo
-                if (grupoActual.length > 0) {
-                    grupos.push(grupoActual);
-                    grupoActual = [];
-                }
-                resultadotmp += expr.accept(this) + "\n" // igual recorrer 
-            }
-        }
-        if (grupoActual.length > 0) {
-            grupos.push(grupoActual);
-        }
-
-        for (let grupo of grupos) {
-            const resultadoGrupo = grupo.map((expr) => expr.accept(this)).join('\n');
-            resultadoFinal += `
-    concat_failed = .false.
-    buffer = ""
-    ${resultadoGrupo}
-    if (.not. concat_failed .and. len(buffer) > 0) then
-        allocate( character(len=len(buffer)) :: lexeme)
-        lexeme = buffer
-        lexeme = lexeme // " -" // ${this.nameProduction}
-        return
-    end if
-        `
-        }
-        return resultadoFinal + resultadotmp;
+        return node.exprs.map((expr) => expr.accept(this)).join('\n');
     }
 
     visitExpresion(node) {
-        if ( node.qty && //there is a quantifier
-            (node.expr instanceof n.String 
-            || node.expr instanceof n.Corchetes
-            || node.expr instanceof n.grupo)
-        ){
-            node.expr.qty = node.qty // inherit quantifier
+        const condition = node.expr.accept(this);
+        switch(node.qty){
+            case '+': 
+            return `
+                        if(.not. ${condition}) then
+                            cycle
+                        end if
+                        do while(.not. cursor > len_trim(input))
+                            if(.not. ${condition}) then
+                                exit
+                            end if
+                        end do while
+`;
+case '*': 
+return this.renderQuantifierOption(node.qty, condition, 1);
+case '?': 
+return this.renderQuantifierOption(node.qty, condition, 1);
+default: 
+return `
+                        if(.not. ${condition}) then
+                            cycle
+                        end if
+            `;
         }
-        return node.expr.accept(this);
     }
 
     visitString(node) {
-        const condition = node.isCase 
-        ? `tolower("${node.val}") == tolower(input(cursor:cursor + ${ node.val.length - 1} ))`
-        :  `"${node.val}" == input(cursor:cursor + ${node.val.length - 1} )`;
-        return this.renderQuantifierOption(node.qty, condition, node.val.length)
+        return `acceptString('${node.val}')`;
     }
 
     visitAny(node) { 
-        return `
-    ! Cualquier carácter es aceptado como lexema
-    if (cursor <= len_trim(input)) then
-        buffer = buffer // input(cursor:cursor + ${length - 1})
-        buffer = replace_special_characters(buffer)
-        cursor = cursor + ${length}
-    else
-        concat_failed = .true.
-        buffer = ""
-    end if
-    `;
+        return 'acceptPeriod()';
     }
 
-    visitCorchetes(node) {
-        node.exprs.forEach(expr => { expr.isCase = node.isCase });
-        let conditions = "(" + node.exprs.map((expr) => expr.accept(this)).join(')& \n    .or. (') + ")"
-        return this.renderQuantifierOption(node.qty, conditions, 1)
+    visitCorchetes(node) {  
+        let character = [];
+        const set = node.exprs
+            .filter((char) => typeof char == 'string')
+            .map((char) => `'${char}'`);
+        const ranges = node.exprs
+            .filter((char) => char instanceof n.rango)
+            .map((range) => range.accept(this));
+        if(set.length !== 0){
+            character = [`acceptSet([${set.join(', ')}])`];
+        }
+        if(ranges.length !== 0){
+            character = [...character, ...ranges];
+        }
+        return character.join(' .or. ');
     }
 
-    //Solo devuelve las condiciones a cumplirse
     visitrango(node) {
-        const condition = node.isCase 
-        ? `iachar(tolower(input(cursor:cursor))) >= iachar("${node.start}") .and. &
-        iachar(tolower(input(cursor:cursor))) <= iachar("${node.end}")`
-        : `iachar(input(cursor:cursor)) >= iachar("${node.start}") .and. &
-        iachar(input(cursor:cursor)) <= iachar("${node.end}")`;
-
-        return "(" + condition + ")";
-    }
-
-    //Solo devuelve las condiciones a cumplirse
-    visitliteralRango(node) {
-        const literalMap = {
-            "\\t": "char(9)",  // Tabulación
-            "\\n": "char(10)", // Nueva línea
-            " ": "char(32)",   // Espacio
-            "\\r": "char(13)",  // Retorno de carro
-        };
-    
-        // Verifica si el literal es especial y tradúcelo, de lo contrario usa comillas
-        const literalFortran = literalMap[node.val] || `"${node.val}"`;
-    
-        const condition = node.isCase
-        ? `tolower(input(cursor:cursor)) == tolower(${literalFortran})`
-        : `input(cursor:cursor) == ${literalFortran}`
-        return "(" + condition + ")";
+        return `acceptRange('${node.start}', '${node.end}')`;
     }
 
     visitidRel(node) {
-        if (!this.calledRules.includes(node.val)) {
+        /*if (!this.calledRules.includes(node.val)) {
             this.calledRules.push(node.val);
             this.pendingRules.push(node.val);
-        }
-        return '';
+        }*/
+        return `peg_$${node.val}()`;
     }
 
     visitgrupo(node) {
@@ -267,7 +313,7 @@ end module parser
     }
 
     visitfinCadena(node) {
-        return '';
+        return 'acceptEOF()';
     }
 
     renderQuantifierOption(qty, condition, length){
