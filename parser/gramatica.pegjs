@@ -3,6 +3,8 @@
     import { ErrorReglas } from './error.js';
     import { errores } from '../index.js'
     import * as n from '../visitor/CST.js';
+    const labels = new Map()
+
 }}
 {}
 gramatica
@@ -44,6 +46,7 @@ union
 
 expresion
   = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)? {
+    labels.get(label,expr)
     return new n.Expresion(expr, label, qty);
   }
 
