@@ -21,28 +21,15 @@ gramatica
   }
 
 producciones
-  = _ id:identificador _ alias:$(literales)? _ "=" _ expr:opciones (_";")? (acciones)? {
+  = _ id:identificador _ alias:$(literales)? _ "=" _ expr:opciones (_";")? (_ acciones _ )?   {
     ids.push(id);
     return new n.Producciones(id, expr, alias);
   }
+  
 
 acciones 
-= "{" _ accion:accion _ "}" {
+= "{" _ accion:([^}]+) _ "}" {
     return accion;
-}
-
-accion
-= id:identificador _ ":" _ instrucciones:instrucciones {
-    return new n.Accion(id, instrucciones);
-}
-
-instrucciones
-= instruccion (_ ";" _ instrucciones)?
-/ instruccion
-
-instruccion
-= id:identificador _ "=" _ expr:opciones {
-    return new n.Instruccion(id, expr);
 }
 
 opciones
@@ -72,7 +59,7 @@ expresiones
   / val:$literales isCase:"i"? {
     return new n.String(val.replace(/['"]/g, ''), isCase);
   }
-  / "(" _ opciones:opciones _ ")"{
+  / "(" _ opciones:opciones _ (_ acciones _)? ")"{
     return new n.grupo(opciones);
   }
 
