@@ -108,19 +108,6 @@ export class rango extends Node {
     }
 }
     
-export class literalRango extends Node {
-
-    constructor(val, isCase) {
-        super();
-        this.val = val;
-		this.isCase = isCase;
-    }
-
-    accept(visitor) {
-        return visitor.visitliteralRango(this);
-    }
-}
-    
 export class idRel extends Node {
 
     constructor(val) {

@@ -324,7 +324,7 @@ function peg$parse(input, options) {
         return new  n.rango(inicio, fin);
     };
   var peg$f14 = function(contenido) {
-        return new n.literalRango(contenido);
+        return contenido;
     };
   var peg$f15 = function() { return text() };
   var peg$currPos = options.peg$currPos | 0;

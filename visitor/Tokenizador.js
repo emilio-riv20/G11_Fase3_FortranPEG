@@ -281,13 +281,13 @@ return `
     visitCorchetes(node) {  
         let character = [];
         const set = node.exprs
-            .filter((char) => typeof char == 'string')
+            .filter((char) => typeof char === 'string')
             .map((char) => `'${char}'`);
         const ranges = node.exprs
             .filter((char) => char instanceof n.rango)
             .map((range) => range.accept(this));
         if(set.length !== 0){
-            character = [`acceptSet([${set.join(', ')}])`];
+            character = [`acceptSet([${set.join(',')}])`];
         }
         if(ranges.length !== 0){
             character = [...character, ...ranges];

@@ -107,7 +107,7 @@ caracter
 // Coincide con cualquier contenido que no incluya "]"
 contenido
     = contenido: (corchete / @$texto){
-        return new n.literalRango(contenido);
+        return contenido;
     }
 
 corchete
