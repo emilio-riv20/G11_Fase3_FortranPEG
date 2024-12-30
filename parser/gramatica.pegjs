@@ -45,7 +45,7 @@ union
   }
 
 expresion
-  = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)? {
+  = label:$(etiqueta/varios)? _ expr:expresiones _ qty:($[?+*]/conteo)? {
     labels.get(label,expr)
     return new n.Expresion(expr, label, qty);
   }

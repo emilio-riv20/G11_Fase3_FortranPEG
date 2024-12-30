@@ -15,6 +15,8 @@ module parser
     implicit none
     integer, private :: cursor, conteo, match
     character(len=:), allocatable, private :: input, expected
+    integer, allocatable :: matches(:)
+    integer :: count
     contains
     
     subroutine parse(str)
@@ -22,7 +24,7 @@ module parser
         input = str
         cursor = 1
         expected = ''
-        if (sum()) then
+        if (peg_$${grammar[0].id}()) then
             print *, "Parsed input succesfully!"
         else
             call error()
@@ -151,21 +153,11 @@ module parser
     end function acceptRange
 
     function acceptSet(set) result(accept)
-        character(len=1), dimension(:), intent(in) :: set
+        character(len=1), dimension(:) :: set
         logical :: accept
-        character(len=1), dimension(size(set)) :: set_lower
-        character(len=1) :: input_char
 
-        set_lower = tolower(set)
-        if (cursor > len(input)) then
+        if(.not. (findloc(set, input(cursor:cursor), 1) > 0)) then
             accept = .false.
-            expected = "<SET>"
-            return
-        end if
-        input_char = tolower(input(cursor:cursor))
-        if (.not. (findloc(set_lower, input_char, 1) > 0)) then
-            accept = .false.
-            expected = "<SET>"
             return
         end if
         cursor = cursor + 1
@@ -237,7 +229,7 @@ end module parser
 
     visitOpciones(node) {
         const template = `
-            do i = 1, ${node.exprs.length+1}
+            do i = 0, ${node.exprs.length+1}
                 select case (i)
                     ${node.exprs.map((expr, i) => `
                     case (${i})
@@ -259,12 +251,11 @@ end module parser
     visitExpresion(node) {
         const condition = node.expr.accept(this);
         const qty = node.qty;
-
+        console.log("Expresion: " + qty);
         if(qty instanceof n.Conteo){
+            console.log("Conteo: " + qty.val);
             // Declarar el arreglo dinámico en el código generado
             const declareMatches = `
-                    integer, allocatable :: matches(:)
-                    integer :: count
                     count = 0
                     allocate(matches(1))
             `;
@@ -272,19 +263,19 @@ end module parser
             // Caso: Conteo exacto |count|
             if(qty.val2 === null && qty.opciones === null){
                 return `
-                    ${declareMatches}
-                    do conteo = 1, ${qty.val}
-                        if (.not. ${condition}) then
-                            return
-                        end if
-        
-                        ! Incrementar y almacenar coincidencia
-                        count = count + 1
-                        if (count > size(matches)) then
-                            call extendArray(matches)
-                        end if
-                        matches(count) = conteo
-                    end do
+                        ${declareMatches}
+                        do conteo = 1, ${qty.val}
+                            if (.not. ${condition}) then
+                                return
+                            end if
+            
+                            ! Incrementar y almacenar coincidencia
+                            count = count + 1
+                            if (count > size(matches)) then
+                                call extendArray(matches)
+                            end if
+                            matches(count) = conteo
+                        end do
                 `;
             }
         
@@ -412,6 +403,10 @@ end module parser
 
     visitfinCadena(node) {
         return 'acceptEOF()';
+    }
+
+    visitConteo(node) {
+        return node.val;
     }
 
     renderQuantifierOption(qty, condition, length){
