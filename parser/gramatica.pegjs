@@ -45,12 +45,8 @@ union
   }
 
 expresion
-<<<<<<< HEAD
-  = label:$(etiqueta/varios)? _ expr:expresiones _ qty:($[?+*]/conteo)? {
-=======
   = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)? {
     labels.get(label,expr)
->>>>>>> 286ed30c3f74e0447c07e17cdee56c696224517f
     return new n.Expresion(expr, label, qty);
   }
 
