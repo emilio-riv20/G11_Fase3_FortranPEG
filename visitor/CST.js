@@ -144,4 +144,18 @@ export class finCadena extends Node {
         return visitor.visitfinCadena(this);
     }
 }
+
+export class Conteo extends Node {
+
+    constructor(val, val2, opciones) {
+        super();
+        this.val = val;
+        this.val2 = val2;
+        this.opciones = opciones;
+    }
+
+    accept(visitor) {
+        return visitor.visitConteo(this);
+    }
+}
     

@@ -45,8 +45,12 @@ union
   }
 
 expresion
+<<<<<<< HEAD
+  = label:$(etiqueta/varios)? _ expr:expresiones _ qty:($[?+*]/conteo)? {
+=======
   = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)? {
     labels.get(label,expr)
+>>>>>>> 286ed30c3f74e0447c07e17cdee56c696224517f
     return new n.Expresion(expr, label, qty);
   }
 
@@ -80,10 +84,10 @@ expresiones
 
 // conteo = "|" parteconteo _ (_ delimitador )? _ "|"
 
-conteo = "|" _ (numero / id:identificador) _ "|"
-        / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"
-        / "|" _ (numero / id:identificador)? _ "," _ opciones _ "|"
-        / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "," _ opciones _ "|"
+conteo = "|" _ val:(numero / identificador / acciones) _ "|" {return new n.Conteo(val, null, null);}
+        / "|" _ val:(numero / identificador / acciones)? _ ".." _ val2:(numero / identificador)? _ "|" {return new n.Conteo(val, val2, null);}
+        / "|" _ val:(numero / identificador / acciones)? _ "," _ opciones:opciones _ "|" {return new n.Conteo(val, null, opciones);}
+        / "|" _ val:(numero / identificador / acciones)? _ ".." _ val2:(numero / identificador)? _ "," _ opciones:opciones _ "|" {return new n.Conteo(val, val2, opciones);}
 
 // parteconteo = identificador
 //             / [0-9]? _ ".." _ [0-9]?
@@ -154,7 +158,7 @@ secuenciaFinLinea = "\r\n" / "\n" / "\r" / "\u2028" / "\u2029"
 //     / "'" [^']* "'"
     
 
-numero = [0-9]+
+numero = [0-9]+ {return parseInt(text(), 10)}
 
 identificador = [_a-z]i[_a-z0-9]i* { return text() }
 

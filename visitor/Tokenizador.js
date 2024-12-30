@@ -13,9 +13,10 @@ export default class Tokenizer extends Visitor {
         return `
 module parser
     implicit none
-    integer, private :: cursor
+    integer, private :: cursor, conteo, match
     character(len=:), allocatable, private :: input, expected
     contains
+    
     subroutine parse(str)
         character(len=:), allocatable, intent(in) :: str
         input = str
@@ -37,17 +38,29 @@ module parser
         call exit(1)
     end subroutine error
 
-    function tolower(str) result(lower_str)
-            character(len=*), intent(in) :: str
-            character(len=len(str)) :: lower_str
-            integer :: i
+    subroutine extendArray(array)
+        integer, allocatable, intent(inout) :: array(:)
+        integer, allocatable :: temp(:)
 
-            lower_str = str 
-            do i = 1, len(str)
-                if (iachar(str(i:i)) >= iachar('A') .and. iachar(str(i:i)) <= iachar('Z')) then
-                    lower_str(i:i) = achar(iachar(str(i:i)) + 32)
-                end if
-            end do
+        allocate(temp(size(array) + 10))  ! Incrementar tamaño en 10 elementos
+        temp(:size(array)) = array        ! Copiar valores existentes
+        deallocate(array)                 ! Liberar memoria del arreglo original
+        allocate(array(size(temp)))       ! Reasignar nuevo tamaño
+        array = temp                      ! Copiar valores extendidos
+        deallocate(temp)                  ! Liberar memoria temporal
+    end subroutine extendArray
+
+    function tolower(str) result(lower_str)
+        character(len=*), intent(in) :: str
+        character(len=len(str)) :: lower_str
+        integer :: i
+
+        lower_str = str 
+        do i = 1, len(str)
+            if (iachar(str(i:i)) >= iachar('A') .and. iachar(str(i:i)) <= iachar('Z')) then
+                lower_str(i:i) = achar(iachar(str(i:i)) + 32)
+            end if
+        end do
     end function tolower
 
     function replace_special_characters(input_string) result(output_string)
@@ -245,9 +258,93 @@ end module parser
 
     visitExpresion(node) {
         const condition = node.expr.accept(this);
-        switch(node.qty){
+        const qty = node.qty;
+
+        if(qty instanceof n.Conteo){
+            // Declarar el arreglo dinámico en el código generado
+            const declareMatches = `
+                    integer, allocatable :: matches(:)
+                    integer :: count
+                    count = 0
+                    allocate(matches(1))
+            `;
+        
+            // Caso: Conteo exacto |count|
+            if(qty.val2 === null && qty.opciones === null){
+                return `
+                    ${declareMatches}
+                    do conteo = 1, ${qty.val}
+                        if (.not. ${condition}) then
+                            return
+                        end if
+        
+                        ! Incrementar y almacenar coincidencia
+                        count = count + 1
+                        if (count > size(matches)) then
+                            call extendArray(matches)
+                        end if
+                        matches(count) = conteo
+                    end do
+                `;
+            }
+        
+            // Caso: Rango |min..max|
+            if(qty.val && qty.val2 && !qty.opciones){
+                return `
+                    ${declareMatches}
+                    match = 0
+                    do conteo = ${qty.val}, ${qty.val2}
+                        if (${condition}) then
+                            match = match + 1
+        
+                            ! Incrementar y almacenar coincidencia
+                            count = count + 1
+                            if (count > size(matches)) then
+                                call extendArray(matches)
+                            end if
+                            matches(count) = conteo
+                        else
+                            exit
+                        end if
+                    end do
+                    if (match < ${qty.val}) then
+                        return
+                    end if
+                `;
+            }
+        
+            // Caso: Rango y opciones |min..max, opciones|
+            if(qty.val && qty.val2 && qty.opciones){
+                let opciones = qty.opciones.exprs.map((expr) => expr.accept(this)).join('\n');
+                return `
+                    ${declareMatches}
+                    match = 0
+                    do conteo = ${qty.val}, ${qty.val2}
+                        if (${condition}) then
+                            match = match + 1
+        
+                            ! Incrementar y almacenar coincidencia
+                            count = count + 1
+                            if (count > size(matches)) then
+                                call extendArray(matches)
+                            end if
+                            matches(count) = conteo
+        
+                            ${opciones}
+                        else
+                            exit
+                        end if
+                    end do
+                    if (match < ${qty.val}) then
+                        return
+                    end if
+                `;
+            }
+        }
+        //Si no es conteo, es cuantificador
+        switch(qty){
             case '+': 
-            return `
+                return `
                         if(.not. ${condition}) then
                             cycle
                         end if
@@ -257,17 +354,18 @@ end module parser
                             end if
                         end do while
 `;
-case '*': 
-return this.renderQuantifierOption(node.qty, condition, 1);
-case '?': 
-return this.renderQuantifierOption(node.qty, condition, 1);
-default: 
-return `
+            case '*': 
+                return this.renderQuantifierOption(node.qty, condition, 1);
+            case '?': 
+                return this.renderQuantifierOption(node.qty, condition, 1);
+            default: 
+            return `
                         if(.not. ${condition}) then
                             cycle
                         end if
             `;
         }
+        
     }
 
     visitString(node) {
@@ -367,5 +465,7 @@ return `
         }   
     
     }
+
+
 
 }
