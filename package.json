@@ -16,5 +16,8 @@
     "@types/node": "^22.10.2",
     "peggy": "^4.2.0",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "monaco-editor": "^0.52.2"
   }
 }

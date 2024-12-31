@@ -7,6 +7,7 @@
     "allowJs": true,
     "checkJs": true,
     "noImplicitOverride": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist"
   }
 }
