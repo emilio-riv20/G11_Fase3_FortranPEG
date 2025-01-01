@@ -103,10 +103,10 @@ match
     return new n.Punto();
   }
 
-conteo = "|" _ val:(numero / identificador / predicate) _ "|" {return new n.Conteo(val, null, null);}
-        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador)? _ "|" {return new n.Conteo(val, null, val2);}
-        / "|" _ val:(numero / identificador / predicate)? _ "," _ opciones:opciones _ "|" {return new n.Conteo(val, opciones, null);}
-        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador)? _ "," _ opciones:opciones _ "|" {return new n.Conteo(val, opciones, val2);}
+conteo = "|" _ val:(numero / identificador / predicate) _ "|" {return [val, null, null]}
+        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador)? _ "|" {return [val, val2, null]}
+        / "|" _ val:(numero / identificador / predicate)? _ "," _ opciones:opciones _ "|"{return [val, null, opciones]}
+        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador)? _ "," _ opciones:opciones _ "|"{return [val, val2, opciones]}
 
 
 predicate
@@ -118,7 +118,7 @@ predicateReturnType
   = t:$(. !"::")+ [ \t\n\r]* "::" [ \t\n\r]* "res" {
     return t.trim();
   }
-
+  
 clase
   = "[" @contenidoClase+ "]"
 

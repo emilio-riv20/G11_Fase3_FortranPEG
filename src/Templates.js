@@ -195,8 +195,8 @@ export const union = (data) => `
  *
  * @param {{
  *  expr: string;
- *  destination: string
- *  quantifier?: string;
+ *  destination: string;
+ *  quantifier?: string | string [];
  * }} data
  * @returns
  */
@@ -219,9 +219,13 @@ export const strExpr = (data) => {
                 ${data.destination} = consumeInput()
             `;
         default:
-            throw new Error(
-                `'${data.quantifier}' quantifier needs implementation`
-            );
+            //Conteo
+            let x = data.quantifier;
+            console.log(x[2]);
+            return`
+            '${x}' quantifier needs implementation
+            `;
+            
     }
 };
 

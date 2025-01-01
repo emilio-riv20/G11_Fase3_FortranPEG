@@ -188,8 +188,21 @@ export default class FortranTranslator {
                 destination: getExprId(this.currentChoice, this.currentExpr),
             });
         } else if (node.qty) {
-            console.log(node.qty);
-            
+            console.log(node.qty[0]);
+            console.log(node.qty[1]);
+            if(node.qty[2] != null){
+                let accept = node.qty[2].accept(this);
+                node.qty[2] = accept;
+            }
+            if(node.qty[0] instanceof CST.Predicate){
+                let accept = node.qty[0].accept(this);
+                node.qty[0] = accept;
+            }
+            return Template.strExpr({
+                quantifier: Object.values(node.qty),
+                expr: node.expr.accept(this),
+                destination: getExprId(this.currentChoice, this.currentExpr),
+            });
             //throw new Error('Repetitions not implemented.');
         } else {
             if (node.expr instanceof CST.Identificador) {
@@ -302,13 +315,5 @@ export default class FortranTranslator {
      */
     visitFin(node) {
         return 'if (.not. acceptEOF()) cycle';
-    }
-
-    /**
-     * @param {CST.Conteo} node
-     * @this {Visitor}
-     */
-    visitConteo(node) {
-        return `acceptCount(${node.val}, ${node.val2})`;
     }
 }

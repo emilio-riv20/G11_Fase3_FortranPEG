@@ -349,10 +349,10 @@ function peg$parse(input, options) {
   var peg$f14 = function() {
     return new n.Punto();
   };
-  var peg$f15 = function(val) {return new n.Conteo(val, null, null);};
-  var peg$f16 = function(val, val2) {return new n.Conteo(val, null, val2);};
-  var peg$f17 = function(val, opciones) {return new n.Conteo(val, opciones, null);};
-  var peg$f18 = function(val, val2, opciones) {return new n.Conteo(val, opciones, val2);};
+  var peg$f15 = function(val) {return [val, null, null]};
+  var peg$f16 = function(val, val2) {return [val, val2, null]};
+  var peg$f17 = function(val, opciones) {return [val, null, opciones]};
+  var peg$f18 = function(val, val2, opciones) {return [val, val2, opciones]};
   var peg$f19 = function(returnType, code) {
     return new n.Predicate(returnType, code, {})
   };

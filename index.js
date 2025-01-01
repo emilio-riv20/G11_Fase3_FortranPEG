@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/+esm';
 import { parse } from './src/parser/gramatica.js';
 import { generateParser } from './src/compiler/utils.js';
@@ -112,12 +113,14 @@ button.addEventListener('click', () => {
         .then((fileContents) => {
             const blob = new Blob([fileContents], { type: 'text/plain' });
             url = URL.createObjectURL(blob);
+            // @ts-ignore
             button.href = url;
             downloadHappening = true;
             button.click();
         })
         .finally(() => {
             URL.revokeObjectURL(url);
+            // @ts-ignore
             button.href = '#';
             downloadHappening = false;
         });

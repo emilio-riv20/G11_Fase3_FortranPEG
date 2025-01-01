@@ -404,30 +404,3 @@ export class Fin {
         return visitor.visitFin(this);
     }
 }
-
-/**
- * @implements {Node}
- */
-export class Conteo {
-    /**
-     *
-     * @param {number|Node|string} val
-     * @param {Node} opciones
-	 * @param {string|number|Node} val2
-
-     */
-    constructor(val, opciones, val2) {
-        this.val = val;
-        this.opciones = opciones;
-        this.val2 = val2;
-    }
-    /**
-     * @template T
-     * @param {Visitor<T>} visitor
-     * @returns {T}
-     */
-    accept(visitor) {
-        return visitor.visitConteo(this);
-    }
-}
-    
