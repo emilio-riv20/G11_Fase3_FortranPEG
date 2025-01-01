@@ -1,9 +1,9 @@
 import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/+esm';
-import { parse } from './parser/gramatica.js';
-import { generateParser } from './compiler/utils.js';
+import { parse } from './src/parser/gramatica.js';
+import { generateParser } from './src/compiler/utils.js';
 
-/** @typedef {import('./visitor/CST.js').Grammar} Grammar*/
-/** @typedef {import('./visitor/Visitor.js').default<string>} Visitor*/
+/** @typedef {import('./src/visitor/CST.js').Grammar} Grammar*/
+/** @typedef {import('./src/visitor/Visitor.js').default<string>} Visitor*/
 
 export let ids = [];
 export let usos = [];

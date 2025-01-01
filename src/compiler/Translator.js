@@ -188,8 +188,9 @@ export default class FortranTranslator {
                 destination: getExprId(this.currentChoice, this.currentExpr),
             });
         } else if (node.qty) {
-            // TODO: Implement repetitions (e.g., |3|, |1..3|, etc...)
-            throw new Error('Repetitions not implemented.');
+            console.log(node.qty);
+            
+            //throw new Error('Repetitions not implemented.');
         } else {
             if (node.expr instanceof CST.Identificador) {
                 return `${getExprId(
@@ -301,5 +302,13 @@ export default class FortranTranslator {
      */
     visitFin(node) {
         return 'if (.not. acceptEOF()) cycle';
+    }
+
+    /**
+     * @param {CST.Conteo} node
+     * @this {Visitor}
+     */
+    visitConteo(node) {
+        return `acceptCount(${node.val}, ${node.val2})`;
     }
 }

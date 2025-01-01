@@ -129,4 +129,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+package.json
+package-lock.json
+tsconfig.json
 tools
+.editorconfig

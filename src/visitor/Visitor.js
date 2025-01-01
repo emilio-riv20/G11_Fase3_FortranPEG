@@ -1,6 +1,3 @@
-
-// Auto-generated
-
 /** @typedef {import('./Node.js').default} Node*/
 /**
  * @typedef {{
@@ -194,4 +191,14 @@ export default class Visitor {
     visitFin(node){
         throw new Error('Implement in subclass');
     }
+
+        /**
+     * @abstract
+     * @param {Node} node
+     * @returns {T}
+     */
+    visitConteo(node){
+        throw new Error('Implement in subclass');
+    }
+
 }

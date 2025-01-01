@@ -4,9 +4,9 @@
 
     // import { identificadores } from '../index.js'
 
-    import { ids, usos} from '../index.js'
+    import { ids, usos} from '../../index.js'
     import { ErrorReglas } from './error.js';
-    import { errores } from '../index.js'
+    import { errores } from '../../index.js'
 
     import * as n from '../visitor/CST.js';
 }}
@@ -83,7 +83,7 @@ label
   }
 
 annotated
-  = text:"$"? _ expr:match _ qty:([?+*]/conteo)? {
+  = text:"$"? _ expr:match _ qty:($[?+*]/conteo)? {
     return new n.Annotated(expr, qty, text ? true : false);
   }
 
@@ -103,11 +103,11 @@ match
     return new n.Punto();
   }
 
-conteo
-  = "|" _ (numero / id:identificador) _ "|"
-  / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"
-  / "|" _ (numero / id:identificador)? _ "," _ opciones _ "|"
-  / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "," _ opciones _ "|"
+conteo = "|" _ val:(numero / identificador / predicate) _ "|" {return new n.Conteo(val, null, null);}
+        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador)? _ "|" {return new n.Conteo(val, null, val2);}
+        / "|" _ val:(numero / identificador / predicate)? _ "," _ opciones:opciones _ "|" {return new n.Conteo(val, opciones, null);}
+        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador)? _ "," _ opciones:opciones _ "|" {return new n.Conteo(val, opciones, val2);}
+
 
 predicate
   = "{" [ \t\n\r]* returnType:predicateReturnType code:$[^}]* "}" {
@@ -165,7 +165,7 @@ secuenciaFinLinea = "\r\n" / "\n" / "\r" / "\u2028" / "\u2029"
 //     "\"" [^"]* "\""
 //     / "'" [^']* "'"
     
-numero = [0-9]+
+numero = [0-9]+ {return parseInt(text(), 10)}
 
 identificador = [_a-z]i[_a-z0-9]i* { return text() }
 
