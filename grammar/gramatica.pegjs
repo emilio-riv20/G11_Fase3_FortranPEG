@@ -65,7 +65,7 @@ parsingExpression
   / '!' assertion:(match/predicate) { //asercion negativa
     return new n.NegAssertion(assertion);
   }
-  / '&' assertion:(match/predicate) { //asecion positiva
+  / '&' assertion:(match/predicate) { //asercion positiva
     return new n.Assertion(assertion);
   }
   / "!." {
