@@ -100,31 +100,69 @@ editor.onDidChangeModelContent(() => {
     analizar();
 });
 
+// let downloadHappening = false;
+// const button = document.getElementById('BotonDescarga');
+// button.addEventListener('click', (e) => {
+//     e.preventDefault()
+//     if (downloadHappening) return;
+//     if (!cst) {
+//         alert('Escribe una gramatica valida');
+//         return;
+//     }
+//     let url;
+//     generateParser(cst)
+//         .then((fileContents) => {
+//             const blob = new Blob([fileContents], { type: 'text/plain' });
+//             url = URL.createObjectURL(blob);
+//             // @ts-ignore
+//             button.href = url;
+//             downloadHappening = true;
+//             button.click();
+//         })
+//         .finally(() => {
+//             URL.revokeObjectURL(url);
+//             // @ts-ignore
+//             button.href = '#';
+//             downloadHappening = false;
+//         });
+// });
+
 let downloadHappening = false;
 const button = document.getElementById('BotonDescarga');
-button.addEventListener('click', () => {
+
+button.addEventListener('click', async (e) => {
+    e.preventDefault(); // Previene la acción por defecto del enlace
+
     if (downloadHappening) return;
+
     if (!cst) {
-        alert('Escribe una gramatica valida');
+        alert('Escribe una gramática válida');
         return;
     }
-    let url;
-    generateParser(cst)
-        .then((fileContents) => {
-            const blob = new Blob([fileContents], { type: 'text/plain' });
-            url = URL.createObjectURL(blob);
-            // @ts-ignore
-            button.href = url;
-            downloadHappening = true;
-            button.click();
-        })
-        .finally(() => {
-            URL.revokeObjectURL(url);
-            // @ts-ignore
-            button.href = '#';
-            downloadHappening = false;
-        });
+
+    downloadHappening = true;
+
+    try {
+        const fileContents = await generateParser(cst); // Genera el contenido del archivo
+        const blob = new Blob([fileContents], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+
+        // Configura y simula la descarga
+        const tempLink = document.createElement('a');
+        tempLink.href = url;
+        tempLink.download = 'parser.f90'; // Nombre del archivo descargado
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+
+        URL.revokeObjectURL(url); // Libera el recurso
+    } catch (error) {
+        console.error('Error al generar el archivo:', error);
+    } finally {
+        downloadHappening = false; // Restablece el estado
+    }
 });
+
 
 // CSS personalizado para resaltar el error y agregar un warning
 const style = document.createElement('style');
