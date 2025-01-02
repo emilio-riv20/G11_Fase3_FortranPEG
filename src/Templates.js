@@ -202,14 +202,35 @@ export const union = (data) => `
  */
 export const strExpr = (data) => {
     if (!data.quantifier) {
+      
         return `
                 lexemeStart = cursor
-                if(.not. ${data.expr}) cycle
+                if (.not. ${data.expr}) cycle
                 ${data.destination} = consumeInput()
         `;
     }
+
     switch (data.quantifier) {
-        case '+':
+        case '?': // Cero o una vez
+            return `
+                lexemeStart = cursor
+                if (.not. ${data.expr}) then
+                    ${data.destination} = ""
+                else
+                    ${data.destination} = consumeInput()
+                end if
+            `;
+
+        case '*': // Cero o más veces
+            return `
+                lexemeStart = cursor
+                do while (.not. cursor > len(input))
+                    if (.not. ${data.expr}) exit
+                end do
+                ${data.destination} = consumeInput()
+            `;
+
+        case '+': // Uno o más veces
             return `
                 lexemeStart = cursor
                 if (.not. ${data.expr}) cycle
@@ -218,6 +239,7 @@ export const strExpr = (data) => {
                 end do
                 ${data.destination} = consumeInput()
             `;
+
         default:
             //Conteo
             let x = data.quantifier;
