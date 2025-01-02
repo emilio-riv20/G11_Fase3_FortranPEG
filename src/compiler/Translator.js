@@ -174,6 +174,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitAnnotated(node) {
+        let conincidencia = node.text;
         if (node.qty && typeof node.qty === 'string') {  //Si node.qty es uno de los cuantificadores, se genera la traducción con un template o se implementa el comportamiento específico.
             if (node.expr instanceof CST.Identificador) {
                 // TODO: Implement quantifiers (i.e., ?, *, +)
@@ -183,6 +184,7 @@ export default class FortranTranslator {
                 )} = ${node.expr.accept(this)}`;
             }else if(node.expr instanceof CST.Clase){
                 return Template.strExpr({ //mapea directamente el cuantificador con la expresión.
+                    text: conincidencia,
                     quantifier: node.qty,
                     expr: node.expr.accept(this),
                     destination: getExprId(this.currentChoice, this.currentExpr),
@@ -190,11 +192,12 @@ export default class FortranTranslator {
 
             }
             return Template.strExpr({ //mapea directamente el cuantificador con la expresión.
+                text: conincidencia,
                 quantifier: node.qty,
                 expr: node.expr.accept(this),
                 destination: getExprId(this.currentChoice, this.currentExpr),
             });
-        } else if (node.qty) {//Si node.qty no es un string, se trata como un arreglo de valores
+        } else if (node.qty) {//Si node.qty no es un string, se trata como un arreglo de valores(conteo)
             if(node.qty[2] != null){
                 let accept = node.qty[2].accept(this);
                 node.qty[2] = accept;
@@ -208,6 +211,7 @@ export default class FortranTranslator {
                 node.qty[1] = accept;
             }
             return Template.strExpr({
+                text: false,
                 quantifier: Object.values(node.qty),
                 expr: node.expr.accept(this),
                 destination: getExprId(this.currentChoice, this.currentExpr),
@@ -220,6 +224,7 @@ export default class FortranTranslator {
                 )} = ${node.expr.accept(this)}`;
             }
             return Template.strExpr({ //Si no hay un cuantificador asociado, traduce la expresión principal
+                text: conincidencia,
                 expr: node.expr.accept(this),
                 destination: getExprId(this.currentChoice, this.currentExpr),
             });
@@ -349,4 +354,14 @@ export default class FortranTranslator {
     visitFin(node) {
         return 'if (.not. acceptEOF()) cycle';
     }
+
+    /**
+     * @param {CST.Parentesis} node
+     * @this {Visitor}
+     */
+
+    visitParentesis(node) {
+        return 'if (.not. acceptEOF()) cycle';
+    }
+
 }

@@ -404,3 +404,25 @@ export class Fin {
         return visitor.visitFin(this);
     }
 }
+
+/**
+ * @implements {Node}
+ */
+export class Parentesis {
+    /**
+     *
+    
+     */
+    constructor() {
+        
+    }
+
+    /**
+     * @template T
+     * @param {Visitor<T>} visitor
+     * @returns {T}
+     */
+    accept(visitor) {
+        return visitor.visitParentesis(this);
+    }
+}

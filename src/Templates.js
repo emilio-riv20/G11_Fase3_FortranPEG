@@ -197,10 +197,22 @@ export const union = (data) => `
  *  expr: string;
  *  destination: string;
  *  quantifier?: string | string[];
+ *  text: boolean;
  * }} data
  * @returns
  */
 export const strExpr = (data) => {
+    if(data.text === true){
+        return `
+                lexemeStart = cursor
+                if (.not. ${data.expr}) then
+                    cycle
+                else
+                    ${data.destination} = consumeInput()
+                end if
+                
+        `;
+    }
     if (!data.quantifier) {
       
         return `

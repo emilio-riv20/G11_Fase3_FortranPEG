@@ -197,7 +197,7 @@ export default class Visitor {
      * @param {Node} node
      * @returns {T}
      */
-    visitConteo(node){
+    visitParentesis(node){
         throw new Error('Implement in subclass');
     }
 

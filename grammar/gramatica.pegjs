@@ -95,7 +95,7 @@ match
   / val:$literales isCase:"i"? {
     return new n.String(val.replace(/['"]/g, ''), isCase ? true : false);
   }
-  / "(" _ @opciones _ ")"
+  / "(" _ op:opciones _ ")" {return new n.Parentesis(op)}
   / chars:clase isCase:"i"? {
     return new n.Clase(chars, isCase ? true : false);
   }
