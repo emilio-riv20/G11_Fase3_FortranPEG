@@ -104,9 +104,9 @@ match
   }
 
 conteo = "|" _ val:(numero / identificador / predicate) _ "|" {return [val, null, null]}
-        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador)? _ "|" {return [val, val2, null]}
+        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador / predicate)? _ "|" {return [val, val2, null]}
         / "|" _ val:(numero / identificador / predicate)? _ "," _ opciones:opciones _ "|"{return [val, null, opciones]}
-        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador)? _ "," _ opciones:opciones _ "|"{return [val, val2, opciones]}
+        / "|" _ val:(numero / identificador / predicate)? _ ".." _ val2:(numero / identificador / predicate)? _ "," _ opciones:opciones _ "|"{return [val, val2, opciones]}
 
 
 predicate

@@ -318,10 +318,10 @@ function peg$parse(input, options) {
     }
     return new n.Union(exprs, action);
   };
-  var peg$f5 = function(assertion) {
+  var peg$f5 = function(assertion) { //asercion negativa
     return new n.NegAssertion(assertion);
   };
-  var peg$f6 = function(assertion) {
+  var peg$f6 = function(assertion) { //asecion positiva
     return new n.Assertion(assertion);
   };
   var peg$f7 = function() {
@@ -1357,6 +1357,9 @@ function peg$parse(input, options) {
           s7 = peg$parsenumero();
           if (s7 === peg$FAILED) {
             s7 = peg$parseidentificador();
+            if (s7 === peg$FAILED) {
+              s7 = peg$parsepredicate();
+            }
           }
           if (s7 === peg$FAILED) {
             s7 = null;
@@ -1478,6 +1481,9 @@ function peg$parse(input, options) {
               s7 = peg$parsenumero();
               if (s7 === peg$FAILED) {
                 s7 = peg$parseidentificador();
+                if (s7 === peg$FAILED) {
+                  s7 = peg$parsepredicate();
+                }
               }
               if (s7 === peg$FAILED) {
                 s7 = null;

@@ -181,6 +181,13 @@ export default class FortranTranslator {
                     this.currentChoice,
                     this.currentExpr
                 )} = ${node.expr.accept(this)}`;
+            }else if(node.expr instanceof CST.Clase){
+                return Template.strExpr({ //mapea directamente el cuantificador con la expresión.
+                    quantifier: node.qty,
+                    expr: node.expr.accept(this),
+                    destination: getExprId(this.currentChoice, this.currentExpr),
+                });
+
             }
             return Template.strExpr({ //mapea directamente el cuantificador con la expresión.
                 quantifier: node.qty,
@@ -196,12 +203,15 @@ export default class FortranTranslator {
                 let accept = node.qty[0].accept(this);
                 node.qty[0] = accept;
             }
+            if(node.qty[1] instanceof CST.Predicate){
+                let accept = node.qty[1].accept(this);
+                node.qty[1] = accept;
+            }
             return Template.strExpr({
                 quantifier: Object.values(node.qty),
                 expr: node.expr.accept(this),
                 destination: getExprId(this.currentChoice, this.currentExpr),
             });
-            //throw new Error('Repetitions not implemented.');
         } else {
             if (node.expr instanceof CST.Identificador) {
                 return `${getExprId(
@@ -258,7 +268,31 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitString(node) {
-        return `acceptString('${node.val}')`;
+        let var1= node.val.split("");
+        let cambioNodeVal="";
+        let cambioLength=0;
+        if(var1.length==2 && var1[0]=="\\"){
+            cambioLength=1;
+            //var1 chanage to ascci number
+            let transformedStr = node.val.replace(/\\(.)/, (match, p1) => {
+                if (p1 === 'n') return '\n'; // Nueva línea (Line Feed)
+                if (p1 === 't') return '\t'; // Tabulación horizontal (Horizontal Tab)
+                if (p1 === 'r') return '\r'; // Retorno de carro (Carriage Return)
+                if (p1 === 'f') return '\f'; // Avance de página (Form Feed)
+                if (p1 === 'v') return '\v'; // Tabulación vertical (Vertical Tab)
+                if (p1 === 'b') return '\b'; // Retroceso (Backspace)
+                if (p1 === '0') return '\0'; // Nulo (Null character)
+
+                // Agrega más casos según sea necesario
+                return p1;
+            });
+            let ascii = transformedStr.charCodeAt(0);
+            cambioNodeVal=`char(${ascii})`;
+        }else{
+            cambioNodeVal = `"${node.val}"`;
+            cambioLength = node.val.length;
+        }
+        return `acceptString('${cambioNodeVal}')`;
     }
 
     /**
