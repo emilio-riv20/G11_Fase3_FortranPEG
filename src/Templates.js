@@ -196,7 +196,7 @@ export const union = (data) => `
  * @param {{
  *  expr: string;
  *  destination: string;
- *  quantifier?: string | string [];
+ *  quantifier?: string | string[];
  * }} data
  * @returns
  */
@@ -221,14 +221,61 @@ export const strExpr = (data) => {
         default:
             //Conteo
             let x = data.quantifier;
-            console.log(x[2]);
-            return`
-            '${x}' quantifier needs implementation
-            `;
-            
+            //Para caso de Conteo |valor|
+            if(x[0] !== null && x[1] === null && x[2] === null){
+                console.log("Conteo normal");
+                return `
+                lexemeStart = cursor
+                do i = 1, ${x[0]}
+                    if (.not. ${data.expr}) then
+                        return
+                    end if
+                end do
+                ${data.destination} = consumeInput()
+                `;
+            }
+            //Para caso de Conteo |valor, valor|
+            if(x[0] !== null && x[1] !== null && x[2] === null){
+                console.log("Conteo doble");
+                return `
+                lexemeStart = cursor
+                do i = ${x[0]}, ${x[1]}
+                    if (.not. ${data.expr}) then
+                        return
+                    end if
+                end do
+                ${data.destination} = consumeInput()
+                `;
+            }
+            //Para caso de Conteo |valor, opciones|
+            if(x[0] !== null && x[1] === null && x[2] !== null){
+                console.log("Conteo con opciones");
+                return `
+                lexemeStart = cursor
+                do i = 1, ${x[0]}
+                    if (${data.expr}) then
+                        ${x[2]}
+                    end if
+                end do
+                ${data.destination} = consumeInput()
+                `;
+
+            }
+            //Para caso de Conteo |valor, valor, opciones|
+            if(x[0] !== null && x[1] !== null && x[2] !== null){
+                console.log("Conteo doble con opciones");
+                return `
+                lexemeStart = cursor
+                do i = ${x[0]}, ${x[1]}
+                    if (${data.expr}) then
+                        ${x[2]}
+                    end if
+                end do
+                ${data.destination} = consumeInput()
+                `;
+            }
     }
 };
-
 /**
  *
  * @param {{

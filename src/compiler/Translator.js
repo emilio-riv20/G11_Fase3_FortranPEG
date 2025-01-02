@@ -188,8 +188,6 @@ export default class FortranTranslator {
                 destination: getExprId(this.currentChoice, this.currentExpr),
             });
         } else if (node.qty) {
-            console.log(node.qty[0]);
-            console.log(node.qty[1]);
             if(node.qty[2] != null){
                 let accept = node.qty[2].accept(this);
                 node.qty[2] = accept;
@@ -313,6 +311,7 @@ export default class FortranTranslator {
      * @param {CST.Fin} node
      * @this {Visitor}
      */
+
     visitFin(node) {
         return 'if (.not. acceptEOF()) cycle';
     }
