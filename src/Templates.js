@@ -475,9 +475,9 @@ export const Ass = (data) => {
             console.log("negative assertion")
             break
         case '&':
-            console.log("Positive assertion")
+            console.log(data.exprs.expr.val)
             return `
-                if (.not. assertionPos('fuzz')) cycle
+                if (.not. assertionPos('${data.exprs.expr.val}')) cycle
             `
         default:
             break;
