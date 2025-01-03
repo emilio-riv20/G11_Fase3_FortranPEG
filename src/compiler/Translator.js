@@ -250,9 +250,12 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitAssertion(node) {
-        console.log("Assertion",node.sym)
-        console.log(node.assertion.accept(this))
-        return node.assertion.accept(this);
+        console.log(node)
+        console.log({
+            sym:node.sym,
+            exprs:node.assertion
+        })
+        return node.assertion.accept(this)
     }
 
     /**

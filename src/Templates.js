@@ -22,6 +22,7 @@ module parser
     interface toStr
         module procedure intToStr
         module procedure strToStr
+        module procedure arrayToStr
     end interface
     
     ${data.beforeContains}
