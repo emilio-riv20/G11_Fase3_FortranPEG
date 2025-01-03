@@ -132,6 +132,17 @@ module parser
 
         cast = str
     end function strToStr
+
+    function arrayToStr(arr) result(cast)
+        character, allocatable :: arr(:)
+        character(len=:), allocatable :: cast
+        integer :: i
+
+        cast = ""
+        do i = 1, size(arr)
+            cast = trim(adjustl(cast)) // arr(i) // " "
+        end do
+    end function arrayToStr
 end module parser
 `;
 
@@ -210,12 +221,10 @@ export const strExpr = (data) => {
     if (data.text === true) {
         return `
                 lexemeStart = cursor
-                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
                     cycle
                 else
-                    allocate(${data.destination}(1))  ! Expande el array
-                    ${data.destination}(1) = consumeInput()
+                    ${data.destination} = consumeInput()
                 end if
         `;
     }
@@ -223,16 +232,15 @@ export const strExpr = (data) => {
     if (!data.quantifier) {
         return `
                 lexemeStart = cursor
-                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) cycle
-                allocate(${data.destination}(1))  ! Expande el array
-                ${data.destination}(1) = consumeInput()
+                ${data.destination} = consumeInput()
         `;
     }
     
     switch (data.quantifier) {
         case '?': // Cero o una vez
             return `
+                ${data.destination} = ''
                 lexemeStart = cursor
                 allocate(qtyArray(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
@@ -241,10 +249,12 @@ export const strExpr = (data) => {
                     allocate(qtyArray(1))  ! Expande el array
                     qtyArray(1) = consumeInput()
                 end if
+                ${data.destination} = arrayToStr(qtyArray)
             `;
     
             case '*': // Cero o más veces
             return `
+                ${data.destination} = ''
                 lexemeStart = cursor
                 allocate(qtyArray(0))  ! Inicializar array vacío
                 do
@@ -262,15 +272,15 @@ export const strExpr = (data) => {
                     qtyArray = tempArray
                     ! Liberar el arreglo temporal
                     deallocate(tempArray)
-                    ! Imprimir el arreglo
-                    print *, qtyArray
                 end do
+                ${data.destination} = arrayToStr(qtyArray)
             `;
     
         case '+': // Uno o más veces
             return `
+                ${data.destination} = ''
                 lexemeStart = cursor
-                
+                allocate(qtyArray(0))
                 if (.not. ${data.expr}) then
                     cycle  ! Salta si no hay al menos una coincidencia
                 else
@@ -288,11 +298,10 @@ export const strExpr = (data) => {
                         qtyArray = tempArray
                         ! Liberar el arreglo temporal
                         deallocate(tempArray)
-                        ! Imprimir el arreglo
-                        print *, qtyArray
                         if (.not. ${data.expr}) exit
                     end do
                 end if
+                ${data.destination} = arrayToStr(qtyArray)
             `;
     
     

@@ -281,33 +281,31 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitString(node) {
-        let var1= node.val.split("");
-        let cambioNodeVal="";
-        let cambioLength=0;
-        if(var1.length==2 && var1[0]=="\\"){
-            cambioLength=1;
-            //var1 chanage to ascci number
-            let transformedStr = node.val.replace(/\\(.)/, (match, p1) => {
-                if (p1 === 'n') return '\n'; // Nueva línea (Line Feed)
-                if (p1 === 't') return '\t'; // Tabulación horizontal (Horizontal Tab)
-                if (p1 === 'r') return '\r'; // Retorno de carro (Carriage Return)
-                if (p1 === 'f') return '\f'; // Avance de página (Form Feed)
-                if (p1 === 'v') return '\v'; // Tabulación vertical (Vertical Tab)
-                if (p1 === 'b') return '\b'; // Retroceso (Backspace)
-                if (p1 === '0') return '\0'; // Nulo (Null character)
+        const escapeMap = {
+            'n': 10, // Nueva línea
+            't': 9,  // Tabulación horizontal
+            'r': 13, // Retorno de carro
+            'f': 12, // Avance de página
+            'v': 11, // Tabulación vertical
+            'b': 8,  // Retroceso
+            '0': 0,  // Nulo
+        };
 
-                // Agrega más casos según sea necesario
-                return p1;
-            });
-            let ascii = transformedStr.charCodeAt(0);
-            cambioNodeVal=`char(${ascii})`;
-        }else{
-            cambioNodeVal = `${node.val}`;
-            cambioLength = node.val.length;
+        // Detectar si es un carácter escapado
+        if (node.val.length === 2 && node.val[0] === '\\') {
+            const escapeChar = node.val[1];
+            if (escapeMap[escapeChar] !== undefined) {
+                return `acceptString(char(${escapeMap[escapeChar]}))`;
+            }
+            // Manejo de casos no mapeados (devolver el carácter como está)
+            return `acceptString('${node.val}')`;
         }
-        cambioNodeVal = cambioNodeVal.replace(/"/g,"")
-        return `acceptString('${cambioNodeVal}')`;
+
+        // Si no es un carácter escapado, manejar como string regular
+        const sanitizedValue = node.val.replace(/"/g, '""'); // Escapar comillas dobles
+        return `acceptString('${sanitizedValue}')`;
     }
+
 
     /**
      * @param {CST.Clase} node
@@ -316,20 +314,39 @@ export default class FortranTranslator {
     visitClase(node) {
         // [abc0-9A-Z]
         let characterClass = [];
+    
+        // Mapa de caracteres especiales a su representación
+        const literalMap = {
+            "\\t": "char(9)",  // Tabulación
+            "\\n": "char(10)", // Nueva línea
+            " ": "char(32)",   // Espacio
+            "\\r": "char(13)", // Retorno de carro
+        };
+    
+        // Función para manejar caracteres especiales con el mapa
+        const escapeSpecialChar = (char) => {
+            // Si el carácter es un carácter especial, lo mapeamos, de lo contrario, lo dejamos como está
+            return literalMap[char] || `'${char}'`;
+        };
+    
+        // Procesar los caracteres de node.chars
         const set = node.chars
-            .filter((char) => typeof char === 'string')
-            .map((char) => `'${char}'`);
+            .map((char) => escapeSpecialChar(char)); // Aplica el mapeo a todos los caracteres
+    
         const ranges = node.chars
             .filter((char) => char instanceof CST.Rango)
             .map((range) => range.accept(this));
+    
         if (set.length !== 0) {
             characterClass = [`acceptSet([${set.join(',')}])`];
         }
         if (ranges.length !== 0) {
             characterClass = [...characterClass, ...ranges];
         }
-        return `(${characterClass.join(' .or. ')})`; // acceptSet(['a','b','c']) .or. acceptRange('0','9') .or. acceptRange('A','Z')
+    
+        return `(${characterClass.join(' .or. ')})`; // Acepta el conjunto de caracteres especiales y rangos
     }
+    
 
     /**
      * @param {CST.Rango} node
