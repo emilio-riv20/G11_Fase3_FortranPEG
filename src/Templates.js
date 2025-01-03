@@ -22,6 +22,7 @@ module parser
     interface toStr
         module procedure intToStr
         module procedure strToStr
+        module procedure arrayToStr
     end interface
     
     ${data.beforeContains}
@@ -132,6 +133,17 @@ module parser
 
         cast = str
     end function strToStr
+
+    function arrayToStr(arr) result(cast)
+        character, allocatable :: arr(:)
+        character(len=:), allocatable :: cast
+        integer :: i
+
+        cast = ""
+        do i = 1, size(arr)
+            cast = trim(adjustl(cast)) // arr(i) // " "
+        end do
+    end function arrayToStr
 end module parser
 `;
 
