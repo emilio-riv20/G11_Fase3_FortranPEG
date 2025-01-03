@@ -205,8 +205,8 @@ export const union = (data) => `
  * @returns
  */
 export const strExpr = (data) => {
+
     if (data.text === true) {
-        
         return `
                 lexemeStart = cursor
                 allocate(${data.destination}(0))  ! Inicializar array vacío
@@ -277,6 +277,7 @@ export const strExpr = (data) => {
                     end do
                 end if
             `;
+    
     
     
 
