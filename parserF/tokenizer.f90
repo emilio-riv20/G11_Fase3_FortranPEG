@@ -9,6 +9,7 @@ module parser
     interface toStr
         module procedure intToStr
         module procedure strToStr
+        module procedure arrayToStr
     end interface
     
     
@@ -24,11 +25,265 @@ module parser
         input = str
         cursor = 1
 
-        res = peg_d()
+        res = peg_emparedado()
     end function parse
 
     
-    function peg_d() result (res)
+    function peg_emparedado() result (res)
+        character(len=:), allocatable :: res
+        character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_0_1
+character(len=:), allocatable :: expr_0_2
+character(len=:), allocatable :: expr_0_3
+character(len=:), allocatable :: expr_0_4
+character(len=:), allocatable :: expr_0_5
+character(len=:), allocatable :: expr_0_6
+character(len=:), allocatable :: expr_0_7
+character(len=:), allocatable :: expr_0_8
+        integer :: i
+
+        savePoint = cursor
+        
+        do i = 0, 1
+            select case(i)
+            
+            case(0)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('pan')) cycle
+            expr_0_0 = consumeInput()
+    
+expr_0_1 = peg__()
+expr_0_2 = peg_proteina()
+expr_0_3 = peg__()
+expr_0_4 = peg_verdes()
+expr_0_5 = peg__()
+expr_0_6 = peg_vegetales()
+expr_0_7 = peg__()
+
+            lexemeStart = cursor
+            if(.not. acceptString('pan')) cycle
+            expr_0_8 = consumeInput()
+    
+                if (.not. acceptEOF()) cycle
+                
+                res = peg_emparedado_f0(expr_0_2, expr_0_4, expr_0_6)
+
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+
+    end function peg_emparedado
+
+
+    function peg_proteina() result (res)
+        character(len=:), allocatable :: res
+        character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_1_0
+character(len=:), allocatable :: expr_2_0
+        integer :: i
+
+        savePoint = cursor
+        
+        do i = 0, 3
+            select case(i)
+            
+            case(0)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('tocino')) cycle
+            expr_0_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_0_0)
+
+
+                exit
+            
+
+            case(1)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('pollo')) cycle
+            expr_1_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_1_0)
+
+
+                exit
+            
+
+            case(2)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('embutido')) cycle
+            expr_2_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_2_0)
+
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+
+    end function peg_proteina
+
+
+    function peg_verdes() result (res)
+        character(len=:), allocatable :: res
+        character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_1_0
+character(len=:), allocatable :: expr_2_0
+        integer :: i
+
+        savePoint = cursor
+        
+        do i = 0, 3
+            select case(i)
+            
+            case(0)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('lechuga')) cycle
+            expr_0_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_0_0)
+
+
+                exit
+            
+
+            case(1)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('espinaca')) cycle
+            expr_1_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_1_0)
+
+
+                exit
+            
+
+            case(2)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('guacamol')) cycle
+            expr_2_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_2_0)
+
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+
+    end function peg_verdes
+
+
+    function peg_vegetales() result (res)
+        character(len=:), allocatable :: res
+        character(len=:), allocatable :: expr_0_0
+character(len=:), allocatable :: expr_1_0
+character(len=:), allocatable :: expr_2_0
+        integer :: i
+
+        savePoint = cursor
+        
+        do i = 0, 3
+            select case(i)
+            
+            case(0)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('tomate')) cycle
+            expr_0_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_0_0)
+
+
+                exit
+            
+
+            case(1)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('repollo')) cycle
+            expr_1_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_1_0)
+
+
+                exit
+            
+
+            case(2)
+                cursor = savePoint
+                
+                
+            lexemeStart = cursor
+            if(.not. acceptString('cebolla')) cycle
+            expr_2_0 = consumeInput()
+    
+                
+                
+                res = toStr(expr_2_0)
+
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+
+    end function peg_vegetales
+
+
+    function peg__() result (res)
         character(len=:), allocatable :: res
         character(len=:), allocatable :: expr_0_0
         integer :: i
@@ -42,29 +297,14 @@ module parser
                 cursor = savePoint
                 
                 
-                expr_0_0 = ''
-                lexemeStart = cursor
-                allocate(qtyArray(0))  ! Inicializar array vacío
-                do
-                    if (.not. acceptString('asd')) exit
-                    ! Expande el array dinámicamente
-                    old_size = size(qtyArray)
-                    allocate(tempArray(old_size + 1))  ! Array temporal con espacio adicional
-                    ! Copiar valores existentes al arreglo temporal
-                    tempArray(1:old_size) = qtyArray
-                    ! Agregar nueva coincidencia al final del arreglo
-                    tempArray(old_size + 1) = consumeInput()
-                    ! Liberar el arreglo original
-                    deallocate(qtyArray)
-                    ! Asignar el arreglo temporal al original
-                    qtyArray = tempArray
-                    ! Liberar el arreglo temporal
-                    deallocate(tempArray)
-                    ! Imprimir el arreglo
-                    print *, qtyArray
-                end do
-            
-                if (.not. acceptEOF()) cycle
+            lexemeStart = cursor
+            if (.not. (acceptSet([char(32)]))) cycle
+            do while (.not. cursor >= len(input))
+                if (.not. (acceptSet([char(32)]))) exit
+            end do
+            expr_0_0 = consumeInput()
+        
+                
                 
                 res = toStr(expr_0_0)
 
@@ -76,11 +316,30 @@ module parser
             end select
         end do
 
-    end function peg_d
+    end function peg__
 
 
     
 
+    
+    function peg_emparedado_f0(P, V1, V2) result(res)
+        character(len=:), allocatable :: P
+character(len=:), allocatable :: V1
+character(len=:), allocatable :: V2
+        character(len=:), allocatable :: res
+        
+
+        if (P == "tocino" .and. V1 == "lechuga" .and. V2 == "tomate") then
+            res = "Un sandwich BLT"
+        else if (P == "pollo" .and. V1 == "espinaca" .and. V2 == "cebolla") then
+            res = "Un sandwich de pollo"
+        else if (P == "embutido" .and. V1 == "guacamol" .and. V2 == "repollo") then
+            res = "Un shuco"
+        else
+            res = "Pan desconocido"
+        end if
+    
+    end function peg_emparedado_f0
     
 
     function acceptString(str) result(accept)
@@ -169,4 +428,39 @@ module parser
 
         cast = str
     end function strToStr
+
+    function arrayToStr(arr) result(cast)
+        character, allocatable :: arr(:)
+        character(len=:), allocatable :: cast
+        integer :: i
+
+        cast = ""
+        do i = 1, size(arr)
+            cast = trim(adjustl(cast)) // arr(i) // " "
+        end do
+    end function arrayToStr
+
+    function assertionPos(str) result(success)
+        logical :: success 
+        character(len=*) :: str
+        integer :: offset
+
+        offset = cursor
+        success = acceptString(str)
+        cursor = offset
+
+    end function assertionPos
+
+    function assertionNeg(str)result(accept)
+        character(len=*) :: str
+        logical :: accept
+        integer :: offset
+
+        offset = len(str) - 1
+        if (str == input(cursor:cursor + offset)) then
+            accept = .false.
+            return
+        end if
+        accept = .true.
+    end function assertionNeg
 end module parser
