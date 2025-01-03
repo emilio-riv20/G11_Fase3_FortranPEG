@@ -259,7 +259,7 @@ switch (data.quantifier) {
         return `
             lexemeStart = cursor
             if (.not. ${data.expr}) cycle
-            do while (.not. cursor > len(input))
+            do while (.not. cursor >= len(input))
                 if (.not. ${data.expr}) exit
             end do
             ${data.destination} = consumeInput()
@@ -268,7 +268,7 @@ switch (data.quantifier) {
     case '*': // Cero o más repeticiones
         return `
             lexemeStart = cursor
-            do while (.not. cursor > len(input))
+            do while (.not. cursor >= len(input))
                 if (.not. ${data.expr}) exit
             end do
             ${data.destination} = consumeInput()
