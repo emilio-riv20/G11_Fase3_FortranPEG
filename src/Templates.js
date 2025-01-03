@@ -268,6 +268,7 @@ export const strExpr = (data) => {
                     allocate(qtyArray(1))  ! Expande el array
                     qtyArray(1) = consumeInput()
                 end if
+                ${data.destination} = arrayToStr(qtyArray)
             `;
     
             case '*': // Cero o más veces
@@ -290,16 +291,15 @@ export const strExpr = (data) => {
                     qtyArray = tempArray
                     ! Liberar el arreglo temporal
                     deallocate(tempArray)
-                    ! Imprimir el arreglo
-                    print *, qtyArray
                 end do
+                ${data.destination} = arrayToStr(qtyArray)
             `;
     
         case '+': // Uno o más veces
             return `
                 ${data.destination} = ''
                 lexemeStart = cursor
-                
+                allocate(qtyArray(0))
                 if (.not. ${data.expr}) then
                     cycle  ! Salta si no hay al menos una coincidencia
                 else
@@ -317,11 +317,10 @@ export const strExpr = (data) => {
                         qtyArray = tempArray
                         ! Liberar el arreglo temporal
                         deallocate(tempArray)
-                        ! Imprimir el arreglo
-                        print *, qtyArray
                         if (.not. ${data.expr}) exit
                     end do
                 end if
+                ${data.destination} = arrayToStr(qtyArray)
             `;
     
     
