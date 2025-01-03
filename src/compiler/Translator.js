@@ -310,7 +310,7 @@ export default class FortranTranslator {
             let ascii = transformedStr.charCodeAt(0);
             cambioNodeVal=`char(${ascii})`;
         }else{
-            cambioNodeVal = `"${node.val}"`;
+            cambioNodeVal = `${node.val}`;
             cambioLength = node.val.length;
         }
         return `acceptString('${cambioNodeVal}')`;

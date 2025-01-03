@@ -16,7 +16,8 @@ export const main = (data) => `
 module parser
     implicit none
     character(len=:), allocatable, private :: input
-    integer, private :: savePoint, lexemeStart, cursor
+    integer, private :: savePoint, lexemeStart, cursor, old_size
+    character, dimension (:), allocatable :: qtyArray, tempArray  
 
     interface toStr
         module procedure intToStr
@@ -233,46 +234,46 @@ export const strExpr = (data) => {
         case '?': // Cero o una vez
             return `
                 lexemeStart = cursor
-                allocate(${data.destination}(0))  ! Inicializar array vacío
+                allocate(qtyArray(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
                     ! No se hace nada, el array se mantiene vacío
                 else
-                    allocate(${data.destination}(1))  ! Expande el array
-                    ${data.destination}(1) = consumeInput()
+                    allocate(qtyArray(1))  ! Expande el array
+                    qtyArray(1) = consumeInput()
                 end if
             `;
     
         case '*': // Cero o más veces
             return `
                 lexemeStart = cursor
-                allocate(${data.destination}(0))  ! Inicializar array vacío
+                allocate(qtyArray(0))  ! Inicializar array vacío
                 do
                     if (.not. ${data.expr}) exit
                     ! Expande el array dinámicamente
-                    old_size = size(${data.destination})
+                    old_size = size(qtyArray)
                     allocate(tempArray(old_size + 1))  ! Array temporal
-                    tempArray(1:old_size) = ${data.destination}  ! Copiar valores existentes
+                    tempArray(1:old_size) = qtyArray  ! Copiar valores existentes
                     tempArray(old_size + 1) = consumeInput()  ! Agregar coincidencia
-                    deallocate(${data.destination})  ! Liberar el original
-                    ${data.destination} = tempArray  ! Asignar el nuevo array
+                    deallocate(qtyArray)  ! Liberar el original
+                   qtyArray = tempArray  ! Asignar el nuevo array
                 end do
             `;
     
         case '+': // Uno o más veces
             return `
                 lexemeStart = cursor
-                allocate(${data.destination}(0))  ! Inicializar array vacío
+                allocateqtyArray(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
                     cycle  ! Salta si no hay al menos una coincidencia
                 else
                     do
                         ! Expande el array dinámicamente
-                        old_size = size(${data.destination})
+                        old_size = size(qtyArray)
                         allocate(tempArray(old_size + 1))  ! Array temporal
-                        tempArray(1:old_size) = ${data.destination}  ! Copiar valores existentes
+                        tempArray(1:old_size) = qtyArray  ! Copiar valores existentes
                         tempArray(old_size + 1) = consumeInput()  ! Agregar coincidencia
-                        deallocate(${data.destination})  ! Liberar el original
-                        ${data.destination} = tempArray  ! Asignar el nuevo array
+                        deallocate(qtyArray)  ! Liberar el original
+                        qtyArray = tempArray  ! Asignar el nuevo array
                         if (.not. ${data.expr}) exit
                     end do
                 end if
