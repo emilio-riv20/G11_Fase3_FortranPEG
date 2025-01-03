@@ -21,6 +21,8 @@ export default class FortranTranslator {
     currentChoice;
     /** @type {number} */
     currentExpr;
+    /** @type {number} */
+    currentBlock;
 
     /**
      *
@@ -29,10 +31,12 @@ export default class FortranTranslator {
     constructor(returnTypes) {
         this.actionReturnTypes = returnTypes;
         this.actions = [];
+        this.blocks = [];
         this.translatingStart = false;
         this.currentRule = '';
         this.currentChoice = 0;
         this.currentExpr = 0;
+        this.currentBlock = 0;
     }
 
     /**
@@ -51,6 +55,7 @@ export default class FortranTranslator {
                 this.actionReturnTypes
             ),
             actions: this.actions,
+            blocks: this.blocks,
             rules,
         });
     }
@@ -189,7 +194,11 @@ export default class FortranTranslator {
                     expr: node.expr.accept(this),
                     destination: getExprId(this.currentChoice, this.currentExpr),
                 });
-
+            }else if(node.expr instanceof CST.Parentesis){
+                return `${getExprId(
+                    this.currentChoice,
+                    this.currentExpr
+                )} = ${node.expr.accept(this)}`;
             }
             return Template.strExpr({ //mapea directamente el cuantificador con la expresión.
                 text: conincidencia,
@@ -218,6 +227,11 @@ export default class FortranTranslator {
             });
         } else {
             if (node.expr instanceof CST.Identificador) {
+                return `${getExprId(
+                    this.currentChoice,
+                    this.currentExpr
+                )} = ${node.expr.accept(this)}`;
+            } if(node.expr instanceof CST.Parentesis){
                 return `${getExprId(
                     this.currentChoice,
                     this.currentExpr
@@ -359,9 +373,43 @@ export default class FortranTranslator {
      * @param {CST.Parentesis} node
      * @this {Visitor}
      */
-
     visitParentesis(node) {
-        return 'if (.not. acceptEOF()) cycle';
+        const currentBlock = this.currentBlock++;
+        const parentRule = this.currentRule;
+    
+        const innerExpressions = node.op.exprs.map((expr, i) => {
+            this.currentExpr = i; // Actualiza el índice de la expresión actual
+            return expr.accept(this); // Genera el código para cada sub-regla
+        });
+        const blockCode = Template.block({
+            ruleId: parentRule,
+            blockId: currentBlock,
+            exprs: innerExpressions,
+            returnType: getReturnType(
+                getActionId(parentRule, this.currentChoice),
+                this.actionReturnTypes
+            ),
+            exprDeclarations: node.op.exprs.flatMap((election, i) =>
+                election.exprs
+                    .filter((expr) => expr instanceof CST.Pluck)
+                    .map((label, j) => {
+                        const expr = label.labeledExpr.annotatedExpr.expr;
+                        return `${
+                            expr instanceof CST.Identificador
+                                ? getReturnType(
+                                      getActionId(expr.id, i),
+                                      this.actionReturnTypes
+                                  )
+                                : 'character(len=:), allocatable'
+                        } :: expr_${i}_${j}`;
+                    })
+            )
+        });
+    
+        // Almacenar el código del bloque para incluirlo en el módulo
+        this.blocks.push(blockCode);
+    
+        // Retornar la llamada al bloque generado
+        return `${parentRule}_b${currentBlock}_f()`;
     }
-
 }

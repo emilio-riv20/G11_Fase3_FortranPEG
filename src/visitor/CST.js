@@ -411,10 +411,10 @@ export class Fin {
 export class Parentesis {
     /**
      *
-    
+     * @param {Opciones} op
      */
-    constructor() {
-        
+    constructor(op) {
+        this.op = op;
     }
 
     /**

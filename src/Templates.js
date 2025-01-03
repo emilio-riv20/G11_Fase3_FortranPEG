@@ -7,6 +7,7 @@
  *  startingRuleType: string;
  *  rules: string[];
  *  actions: string[];
+ *  blocks: string[];
  * }} data
  * @returns {string}
  */
@@ -39,6 +40,8 @@ module parser
     end function parse
 
     ${data.rules.join('\n')}
+
+    ${data.blocks.join('\n')}
 
     ${data.actions.join('\n')}
 
@@ -355,3 +358,35 @@ export const action = (data) => {
     end function peg_${data.ruleId}_f${data.choice}
     `;
 };
+
+/**
+ * @param {{
+*  blockId: number;
+*  ruleId: string;
+*  exprs: string[];
+*  exprDeclarations: string[];
+*  returnType: string;
+* }} data
+* @returns {string}
+*/
+export const block = (data) => `
+   function ${data.ruleId}_b${data.blockId}_f() result(res)
+       ${data.returnType} :: res
+       ${data.exprDeclarations.join('\n')}
+       integer :: i
+
+       savePoint = cursor
+       do i = 1, ${data.exprs.length}
+           select case (i)
+               ${data.exprs.map(
+                   (expr, i) => `
+               case (${i})
+                    ${expr}
+               `
+               ).join('')}
+                case default
+                     call pegError()
+           end select
+        end do
+   end function ${data.ruleId}_b${data.blockId}_f
+`;

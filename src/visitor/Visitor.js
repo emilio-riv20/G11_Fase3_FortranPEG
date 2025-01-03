@@ -25,6 +25,11 @@ export default class Visitor {
      */
     actions
     /**
+     * List with all the actions' code.
+     * @type {string[]}
+     */
+    blocks
+    /**
      * Wheter we are traversing the starting rule or not.
      * @type {boolean}
      */
@@ -46,7 +51,11 @@ export default class Visitor {
      * @type {number}
      */
     currentExpr;
-
+    /** 
+    *
+    * @type {number}
+    */
+    currentBlock;
     
     /**
      * @abstract
