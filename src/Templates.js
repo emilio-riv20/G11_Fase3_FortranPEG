@@ -243,91 +243,41 @@ export const union = (data) => `
  */
 export const strExpr = (data) => {
 
-    if (data.text === true) {
-        return `
-                lexemeStart = cursor
-                if (.not. ${data.expr}) then
-                    cycle
-                else
-                    ${data.destination} = consumeInput()
-                end if
-        `;
-    }
-    
     if (!data.quantifier) {
+    return `
+            lexemeStart = cursor
+            if(.not. ${data.expr}) cycle
+            ${data.destination} = consumeInput()
+    `;
+}
+
+switch (data.quantifier) {
+    case '+': // Una o más repeticiones
         return `
-                lexemeStart = cursor
-                if (.not. ${data.expr}) cycle
-                ${data.destination} = consumeInput()
+            lexemeStart = cursor
+            if (.not. ${data.expr}) cycle
+            do while (.not. cursor >= len(input))
+                if (.not. ${data.expr}) exit
+            end do
+            ${data.destination} = consumeInput()
         `;
-    }
-    
-    switch (data.quantifier) {
-        case '?': // Cero o una vez
-            return `
-                ${data.destination} = ''
-                lexemeStart = cursor
-                allocate(qtyArray(0))  ! Inicializar array vacío
-                if (.not. ${data.expr}) then
-                    ! No se hace nada, el array se mantiene vacío
-                else
-                    allocate(qtyArray(1))  ! Expande el array
-                    qtyArray(1) = consumeInput()
-                end if
-                ${data.destination} = arrayToStr(qtyArray)
-            `;
-    
-            case '*': // Cero o más veces
-            return `
-                ${data.destination} = ''
-                lexemeStart = cursor
-                allocate(qtyArray(0))  ! Inicializar array vacío
-                do
-                    if (.not. ${data.expr}) exit
-                    ! Expande el array dinámicamente
-                    old_size = size(qtyArray)
-                    allocate(tempArray(old_size + 1))  ! Array temporal con espacio adicional
-                    ! Copiar valores existentes al arreglo temporal
-                    tempArray(1:old_size) = qtyArray
-                    ! Agregar nueva coincidencia al final del arreglo
-                    tempArray(old_size + 1) = consumeInput()
-                    ! Liberar el arreglo original
-                    deallocate(qtyArray)
-                    ! Asignar el arreglo temporal al original
-                    qtyArray = tempArray
-                    ! Liberar el arreglo temporal
-                    deallocate(tempArray)
-                end do
-                ${data.destination} = arrayToStr(qtyArray)
-            `;
-    
-        case '+': // Uno o más veces
-            return `
-                ${data.destination} = ''
-                lexemeStart = cursor
-                allocate(qtyArray(0))
-                if (.not. ${data.expr}) then
-                    cycle  ! Salta si no hay al menos una coincidencia
-                else
-                    do
-                        ! Expande el array dinámicamente
-                        old_size = size(qtyArray)
-                        allocate(tempArray(old_size + 1))  ! Array temporal con espacio adicional
-                        ! Copiar valores existentes al arreglo temporal
-                        tempArray(1:old_size) = qtyArray
-                        ! Agregar nueva coincidencia al final del arreglo
-                        tempArray(old_size + 1) = consumeInput()
-                        ! Liberar el arreglo original
-                        deallocate(qtyArray)
-                        ! Asignar el arreglo temporal al original
-                        qtyArray = tempArray
-                        ! Liberar el arreglo temporal
-                        deallocate(tempArray)
-                        if (.not. ${data.expr}) exit
-                    end do
-                end if
-                ${data.destination} = arrayToStr(qtyArray)
-            `;
+
+    case '*': // Cero o más repeticiones
+        return `
+            lexemeStart = cursor
+            do while (.not. cursor >= len(input))
+                if (.not. ${data.expr}) exit
+            end do
+            ${data.destination} = consumeInput()
+        `;
+
+    case '?': // Cero o una repetición
+        return `
+            lexemeStart = cursor
+            if (.not. ${data.expr}) cycle
+            ${data.destination} = consumeInput()
+        `;
+
     
     
     
