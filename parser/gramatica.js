@@ -318,11 +318,11 @@ function peg$parse(input, options) {
     }
     return new n.Union(exprs, action);
   };
-  var peg$f5 = function(sym, assertion) { //asercion negativa
-    return new n.PosAssertion(assertion);
+  var peg$f5 = function(assertion) { //asercion negativa
+    return new n.Assertion("!",assertion);
   };
-  var peg$f6 = function(sym, assertion) { //asercion positiva
-    return new n.NegAssertion(assertion);
+  var peg$f6 = function(assertion) { //asercion positiva
+    return new n.Assertion("&",assertion);
   };
   var peg$f7 = function() {
     return new n.Fin();
@@ -1003,7 +1003,7 @@ function peg$parse(input, options) {
         }
         if (s2 !== peg$FAILED) {
           peg$savedPos = s0;
-          s0 = peg$f5(s1, s2);
+          s0 = peg$f5(s2);
         } else {
           peg$currPos = s0;
           s0 = peg$FAILED;
@@ -1028,7 +1028,7 @@ function peg$parse(input, options) {
           }
           if (s2 !== peg$FAILED) {
             peg$savedPos = s0;
-            s0 = peg$f6(s1, s2);
+            s0 = peg$f6(s2);
           } else {
             peg$currPos = s0;
             s0 = peg$FAILED;

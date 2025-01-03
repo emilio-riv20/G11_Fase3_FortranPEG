@@ -246,12 +246,15 @@ export default class FortranTranslator {
     }
 
     /**
-     * @param {CST.PosAssertion} node
+     * @param {CST.Assertion} node
      * @this {Visitor}
      */
-    visitPosAssertion(node) {
-        console.log(node)
-        return node.assertion.accept(this);
+    visitAssertion(node) {
+        console.log(node.assertion.accept(this))
+        return Template.Ass({
+            sym:node.sym,
+            exprs:node.assertion
+        });
     }
 
     /**
@@ -313,6 +316,7 @@ export default class FortranTranslator {
             cambioNodeVal = `"${node.val}"`;
             cambioLength = node.val.length;
         }
+        cambioNodeVal = cambioNodeVal.replace(/"/g,"")
         return `acceptString('${cambioNodeVal}')`;
     }
 

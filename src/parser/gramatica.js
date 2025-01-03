@@ -319,10 +319,10 @@ function peg$parse(input, options) {
     return new n.Union(exprs, action);
   };
   var peg$f5 = function(assertion) { //asercion negativa
-    return new n.NegAssertion(assertion);
+    return new n.Assertion("!",assertion);
   };
   var peg$f6 = function(assertion) { //asercion positiva
-    return new n.PosAssertion(assertion);
+    return new n.Assertion("&",assertion);
   };
   var peg$f7 = function() {
     return new n.Fin();

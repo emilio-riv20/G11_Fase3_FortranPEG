@@ -134,7 +134,7 @@ export default class Visitor {
      * @param {Node} node
      * @returns {T}
      */
-    visitPosAssertion(node){
+    visitAssertion(node){
         throw new Error('Implement in subclass');
     }
 	

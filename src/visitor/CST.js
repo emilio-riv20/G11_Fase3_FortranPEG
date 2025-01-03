@@ -219,11 +219,13 @@ export class Annotated {
 /**
  * @implements {Node}
  */
-export class PosAssertion {
+export class Assertion {
     /**
+     * @param {string} sym
      * @param {(Annotated|Predicate)} assertion
      */
-    constructor(assertion) {
+    constructor(sym,assertion) {
+        this.sym = sym
         this.assertion = assertion;
     }
 
@@ -233,7 +235,7 @@ export class PosAssertion {
      * @returns {T}
      */
     accept(visitor) {
-        return visitor.visitPosAssertion(this);
+        return visitor.visitAssertion(this);
     }
 }
     

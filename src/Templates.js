@@ -414,6 +414,27 @@ export const block = (data) => `
    end function ${data.ruleId}_b${data.blockId}_f
 `;
 
-export const PosAss =(data)=>{}
+/**
+ * @param {{
+*  sym: string;
+*  exprs: string[];
+* }} data
+* @returns
+*/
+export const Ass = (data) => 
+    `
+        function PosAss(str)
+            character(len=*) :: str
+            logical :: accept
+            integer :: offset
 
-export const NegAss =(data)=>{}
+            offset = len(str) - 1
+            if (str /= input(cursor:cursor + offset)) then
+                accept = .false.
+                return
+            end if
+            cursor = cursor + len(str)
+            accept = .true.
+        end function acceptString
+    `;
+
