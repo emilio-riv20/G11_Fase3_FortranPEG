@@ -1,151 +1,96 @@
 
+!auto-generated
 module parser
     implicit none
-    integer, private :: cursor, conteo, match
-    character(len=:), allocatable, private :: input, expected
-    integer, allocatable :: matches(:)
-    integer :: count
+    character(len=:), allocatable, private :: input
+    integer, private :: savePoint, lexemeStart, cursor, old_size
+    character, dimension (:), allocatable :: qtyArray, tempArray  
+
+    interface toStr
+        module procedure intToStr
+        module procedure strToStr
+    end interface
+    
+    
+
     contains
     
-    subroutine parse(str)
-        character(len=:), allocatable, intent(in) :: str
+    
+
+    function parse(str) result(res)
+        character(len=:), allocatable :: str
+        character(len=:), allocatable :: res
+
         input = str
         cursor = 1
-        expected = ''
-        if (peg_$start()) then
-            print *, "Parsed input succesfully!"
-        else
-            call error()
-        end if
-    end subroutine parse
 
-    subroutine error()
-        if(cursor > len(input))then
-            print *, "Error: Expected "//expected//", but found EOF"
-            call exit(1)
-        end if
-        print *, "Error: Expected "//expected//", but found '"//input(cursor:cursor)//"'"
-        call exit(1)
-    end subroutine error
-
-    subroutine extendArray(array)
-        integer, allocatable, intent(inout) :: array(:)
-        integer, allocatable :: temp(:)
-
-        allocate(temp(size(array) + 10))  ! Incrementar tamaño en 10 elementos
-        temp(:size(array)) = array        ! Copiar valores existentes
-        deallocate(array)                 ! Liberar memoria del arreglo original
-        allocate(array(size(temp)))       ! Reasignar nuevo tamaño
-        array = temp                      ! Copiar valores extendidos
-        deallocate(temp)                  ! Liberar memoria temporal
-    end subroutine extendArray
-
-    function tolower(str) result(lower_str)
-        character(len=*), intent(in) :: str
-        character(len=len(str)) :: lower_str
-        integer :: i
-
-        lower_str = str 
-        do i = 1, len(str)
-            if (iachar(str(i:i)) >= iachar('A') .and. iachar(str(i:i)) <= iachar('Z')) then
-                lower_str(i:i) = achar(iachar(str(i:i)) + 32)
-            end if
-        end do
-    end function tolower
-
-    function replace_special_characters(input_string) result(output_string)
-        implicit none
-        character(len=:), allocatable, intent(in) :: input_string
-        character(len=:), allocatable :: temp_string
-        character(len=:), allocatable :: output_string
-        integer :: i, length
-
-        temp_string = ""
-        length = len(input_string)
-
-        do i = 1, length
-            select case (ichar(input_string(i:i)))
-            case (10) ! Nueva línea
-                temp_string = temp_string // '\n'
-            case (9)  ! Tabulación
-                temp_string = temp_string // '\t'
-            case (13) ! Retorno de carro
-                temp_string = temp_string // '\r'
-            case (32) ! Espacio
-                if (input_string(i:i) == " ") then
-                    temp_string = temp_string // "_"
-                else
-                    temp_string = temp_string // input_string(i:i)
-                end if
-            case default
-                temp_string = temp_string // input_string(i:i)
-            end select
-        end do
-        allocate(character(len=len(temp_string)) :: output_string)
-        output_string = temp_string
-    end function
+        res = peg_d()
+    end function parse
 
     
-    function peg_$start() result(accept)
-        logical :: accept
+    function peg_d() result (res)
+        character(len=:), allocatable :: res
+        character(len=:), allocatable :: expr_0_0
         integer :: i
+
+        savePoint = cursor
         
-        accept = .false.
-        
-            do i = 0, 2
-                select case (i)
-                    
-                    case (0)
-                        
-                        
-                    count = 0
-                    allocate(matches(1))
+        do i = 0, 1
+            select case(i)
             
-                        do conteo = 1, 2
-                            if (.not. acceptString('a')) then
-                                return
-                            end if
-            
-                            ! Incrementar y almacenar coincidencia
-                            count = count + 1
-                            if (count > size(matches)) then
-                                call extendArray(matches)
-                            end if
-                            matches(count) = conteo
-                        end do
+            case(0)
+                cursor = savePoint
                 
-                        exit
-                    
-                    case default
-                        return 
-                end select
-            end do
-        
-        if(.not. acceptEOF())then
-            return
-        end if 
-        accept = .true.
-    end function peg_$start
-        
+                
+                expr_0_0 = ''
+                lexemeStart = cursor
+                allocate(qtyArray(0))  ! Inicializar array vacío
+                do
+                    if (.not. acceptString('asd')) exit
+                    ! Expande el array dinámicamente
+                    old_size = size(qtyArray)
+                    allocate(tempArray(old_size + 1))  ! Array temporal con espacio adicional
+                    ! Copiar valores existentes al arreglo temporal
+                    tempArray(1:old_size) = qtyArray
+                    ! Agregar nueva coincidencia al final del arreglo
+                    tempArray(old_size + 1) = consumeInput()
+                    ! Liberar el arreglo original
+                    deallocate(qtyArray)
+                    ! Asignar el arreglo temporal al original
+                    qtyArray = tempArray
+                    ! Liberar el arreglo temporal
+                    deallocate(tempArray)
+                    ! Imprimir el arreglo
+                    print *, qtyArray
+                end do
+            
+                if (.not. acceptEOF()) cycle
+                
+                res = toStr(expr_0_0)
+
+
+                exit
+            
+            case default
+                call pegError()
+            end select
+        end do
+
+    end function peg_d
+
+
+    
+
+    
 
     function acceptString(str) result(accept)
-        character(len = *), intent(in) :: str
+        character(len=*) :: str
         logical :: accept
         integer :: offset
-        character(len=len(str)) :: str_lower
-        character(len=len(str)) :: input_sub
 
         offset = len(str) - 1
-        str_lower = tolower(str)
-        if (cursor + offset > len(input)) then
+        if (str /= input(cursor:cursor + offset)) then
             accept = .false.
-            expected = str
-            return
-        end if
-        input_sub = tolower(input(cursor:cursor + offset))
-        if (str_lower /= input_sub) then
-            accept = .false.
-            expected = str
             return
         end if
         cursor = cursor + len(str)
@@ -153,20 +98,11 @@ module parser
     end function acceptString
 
     function acceptRange(bottom, top) result(accept)
-        character(len=1), intent(in) :: bottom, top
+        character(len=1) :: bottom, top
         logical :: accept
-        character(len=1) :: input_char
 
-        if (cursor > len(input)) then
+        if(.not. (input(cursor:cursor) >= bottom .and. input(cursor:cursor) <= top)) then
             accept = .false.
-            expected = bottom // "-" // top
-            return
-        end if
-
-        input_char = tolower(input(cursor:cursor))
-        if (.not. (input_char >= tolower(bottom) .and. input_char <= tolower(top))) then
-            accept = .false.
-            expected = bottom // "-" // top
             return
         end if
         cursor = cursor + 1
@@ -187,9 +123,9 @@ module parser
 
     function acceptPeriod() result(accept)
         logical :: accept
+
         if (cursor > len(input)) then
             accept = .false.
-            expected = "<ANYTHING>"
             return
         end if
         cursor = cursor + 1
@@ -198,13 +134,39 @@ module parser
 
     function acceptEOF() result(accept)
         logical :: accept
+
         if(.not. cursor > len(input)) then
             accept = .false.
-            expected = "<EOF>"
             return
         end if
         accept = .true.
     end function acceptEOF
 
-end module parser 
-        
+    function consumeInput() result(substr)
+        character(len=:), allocatable :: substr
+
+        substr = input(lexemeStart:cursor - 1)
+    end function consumeInput
+
+    subroutine pegError()
+        print '(A,I0,A)', "Error at ", cursor, ": '"//input(cursor:cursor)//"'"
+
+        call exit(1)
+    end subroutine pegError
+
+    function intToStr(int) result(cast)
+        integer :: int
+        character(len=31) :: tmp
+        character(len=:), allocatable :: cast
+
+        write(tmp, '(I0)') int
+        cast = trim(adjustl(tmp))
+    end function intToStr
+
+    function strToStr(str) result(cast)
+        character(len=:), allocatable :: str
+        character(len=:), allocatable :: cast
+
+        cast = str
+    end function strToStr
+end module parser

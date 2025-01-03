@@ -210,12 +210,10 @@ export const strExpr = (data) => {
     if (data.text === true) {
         return `
                 lexemeStart = cursor
-                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
                     cycle
                 else
-                    allocate(${data.destination}(1))  ! Expande el array
-                    ${data.destination}(1) = consumeInput()
+                    ${data.destination} = consumeInput()
                 end if
         `;
     }
@@ -223,16 +221,15 @@ export const strExpr = (data) => {
     if (!data.quantifier) {
         return `
                 lexemeStart = cursor
-                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) cycle
-                allocate(${data.destination}(1))  ! Expande el array
-                ${data.destination}(1) = consumeInput()
+                ${data.destination} = consumeInput()
         `;
     }
     
     switch (data.quantifier) {
         case '?': // Cero o una vez
             return `
+                ${data.destination} = ''
                 lexemeStart = cursor
                 allocate(qtyArray(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
@@ -245,6 +242,7 @@ export const strExpr = (data) => {
     
             case '*': // Cero o más veces
             return `
+                ${data.destination} = ''
                 lexemeStart = cursor
                 allocate(qtyArray(0))  ! Inicializar array vacío
                 do
@@ -269,6 +267,7 @@ export const strExpr = (data) => {
     
         case '+': // Uno o más veces
             return `
+                ${data.destination} = ''
                 lexemeStart = cursor
                 
                 if (.not. ${data.expr}) then
