@@ -243,7 +243,7 @@ export const strExpr = (data) => {
                 end if
             `;
     
-        case '*': // Cero o más veces
+            case '*': // Cero o más veces
             return `
                 lexemeStart = cursor
                 allocate(qtyArray(0))  ! Inicializar array vacío
@@ -251,29 +251,45 @@ export const strExpr = (data) => {
                     if (.not. ${data.expr}) exit
                     ! Expande el array dinámicamente
                     old_size = size(qtyArray)
-                    allocate(tempArray(old_size + 1))  ! Array temporal
-                    tempArray(1:old_size) = qtyArray  ! Copiar valores existentes
-                    tempArray(old_size + 1) = consumeInput()  ! Agregar coincidencia
-                    deallocate(qtyArray)  ! Liberar el original
-                   qtyArray = tempArray  ! Asignar el nuevo array
+                    allocate(tempArray(old_size + 1))  ! Array temporal con espacio adicional
+                    ! Copiar valores existentes al arreglo temporal
+                    tempArray(1:old_size) = qtyArray
+                    ! Agregar nueva coincidencia al final del arreglo
+                    tempArray(old_size + 1) = consumeInput()
+                    ! Liberar el arreglo original
+                    deallocate(qtyArray)
+                    ! Asignar el arreglo temporal al original
+                    qtyArray = tempArray
+                    ! Liberar el arreglo temporal
+                    deallocate(tempArray)
+                    ! Imprimir el arreglo
+                    print *, qtyArray
                 end do
             `;
     
         case '+': // Uno o más veces
             return `
                 lexemeStart = cursor
-                allocateqtyArray(0))  ! Inicializar array vacío
+                
                 if (.not. ${data.expr}) then
                     cycle  ! Salta si no hay al menos una coincidencia
                 else
                     do
                         ! Expande el array dinámicamente
                         old_size = size(qtyArray)
-                        allocate(tempArray(old_size + 1))  ! Array temporal
-                        tempArray(1:old_size) = qtyArray  ! Copiar valores existentes
-                        tempArray(old_size + 1) = consumeInput()  ! Agregar coincidencia
-                        deallocate(qtyArray)  ! Liberar el original
-                        qtyArray = tempArray  ! Asignar el nuevo array
+                        allocate(tempArray(old_size + 1))  ! Array temporal con espacio adicional
+                        ! Copiar valores existentes al arreglo temporal
+                        tempArray(1:old_size) = qtyArray
+                        ! Agregar nueva coincidencia al final del arreglo
+                        tempArray(old_size + 1) = consumeInput()
+                        ! Liberar el arreglo original
+                        deallocate(qtyArray)
+                        ! Asignar el arreglo temporal al original
+                        qtyArray = tempArray
+                        ! Liberar el arreglo temporal
+                        deallocate(tempArray)
+                        ! Imprimir el arreglo
+                        print *, qtyArray
                         if (.not. ${data.expr}) exit
                     end do
                 end if
