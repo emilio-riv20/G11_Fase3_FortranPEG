@@ -160,7 +160,16 @@ module parser
     end function assertionPos
 
     function assertionNeg(str)result(cursor)
+        character(len=*) :: str
+        logical :: accept
+        integer :: offset, savePoint
 
+        offset = len(str) - 1
+        if (str == input(cursor:cursor + offset)) then
+            accept = .false.
+            return
+        end if
+        accept = .true.
     end function assertionNeg
 end module parser
 `;
@@ -473,7 +482,9 @@ export const Ass = (data) => {
     switch(data.sym){
         case '!':
             console.log("negative assertion")
-            break
+            return `
+            if (.not. assertionNeg('${data.exprs.expr.val}')) cycle
+        `
         case '&':
             console.log(data.exprs.expr.val)
             return `
