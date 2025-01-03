@@ -205,55 +205,78 @@ export const union = (data) => `
  * @returns
  */
 export const strExpr = (data) => {
-    if(data.text === true){
+    if (data.text === true) {
         return `
                 lexemeStart = cursor
+                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
                     cycle
                 else
-                    ${data.destination} = consumeInput()
+                    allocate(${data.destination}(1))  ! Expande el array
+                    ${data.destination}(1) = consumeInput()
                 end if
-                
         `;
     }
+    
     if (!data.quantifier) {
-      
         return `
                 lexemeStart = cursor
+                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) cycle
-                ${data.destination} = consumeInput()
+                allocate(${data.destination}(1))  ! Expande el array
+                ${data.destination}(1) = consumeInput()
         `;
     }
-
+    
     switch (data.quantifier) {
         case '?': // Cero o una vez
             return `
                 lexemeStart = cursor
+                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
-                    ${data.destination} = ""
+                    ! No se hace nada, el array se mantiene vacío
                 else
-                    ${data.destination} = consumeInput()
+                    allocate(${data.destination}(1))  ! Expande el array
+                    ${data.destination}(1) = consumeInput()
                 end if
             `;
-
+    
         case '*': // Cero o más veces
             return `
                 lexemeStart = cursor
-                do while (.not. cursor > len(input))
+                allocate(${data.destination}(0))  ! Inicializar array vacío
+                do
                     if (.not. ${data.expr}) exit
+                    ! Expande el array dinámicamente
+                    old_size = size(${data.destination})
+                    allocate(tempArray(old_size + 1))  ! Array temporal
+                    tempArray(1:old_size) = ${data.destination}  ! Copiar valores existentes
+                    tempArray(old_size + 1) = consumeInput()  ! Agregar coincidencia
+                    deallocate(${data.destination})  ! Liberar el original
+                    ${data.destination} = tempArray  ! Asignar el nuevo array
                 end do
-                ${data.destination} = consumeInput()
             `;
-
+    
         case '+': // Uno o más veces
             return `
                 lexemeStart = cursor
-                if (.not. ${data.expr}) cycle
-                do while (.not. cursor > len(input))
-                    if (.not. ${data.expr}) exit
-                end do
-                ${data.destination} = consumeInput()
+                allocate(${data.destination}(0))  ! Inicializar array vacío
+                if (.not. ${data.expr}) then
+                    cycle  ! Salta si no hay al menos una coincidencia
+                else
+                    do
+                        ! Expande el array dinámicamente
+                        old_size = size(${data.destination})
+                        allocate(tempArray(old_size + 1))  ! Array temporal
+                        tempArray(1:old_size) = ${data.destination}  ! Copiar valores existentes
+                        tempArray(old_size + 1) = consumeInput()  ! Agregar coincidencia
+                        deallocate(${data.destination})  ! Liberar el original
+                        ${data.destination} = tempArray  ! Asignar el nuevo array
+                        if (.not. ${data.expr}) exit
+                    end do
+                end if
             `;
+
 
         default:
             //Conteo
