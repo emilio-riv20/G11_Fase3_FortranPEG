@@ -159,7 +159,7 @@ module parser
         accept = .true.
     end function assertionPos
 
-    function assertionNeg(str)result(cursor)
+    function assertionNeg(str)result(accept)
         character(len=*) :: str
         logical :: accept
         integer :: offset, savePoint
