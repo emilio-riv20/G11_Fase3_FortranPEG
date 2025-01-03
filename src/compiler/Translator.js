@@ -250,19 +250,8 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitAssertion(node) {
+        console.log("Assertion",node.sym)
         console.log(node.assertion.accept(this))
-        return Template.Ass({
-            sym:node.sym,
-            exprs:node.assertion
-        });
-    }
-
-    /**
-     * @param {CST.NegAssertion} node
-     * @this {Visitor}
-     */
-    visitNegAssertion(node) {
-        console.log(node)
         return node.assertion.accept(this);
     }
 

@@ -143,15 +143,6 @@ export default class Visitor {
      * @param {Node} node
      * @returns {T}
      */
-    visitNegAssertion(node){
-        throw new Error('Implement in subclass');
-    }
-	
-    /**
-     * @abstract
-     * @param {Node} node
-     * @returns {T}
-     */
     visitString(node){
         throw new Error('Implement in subclass');
     }

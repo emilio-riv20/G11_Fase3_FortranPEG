@@ -62,11 +62,11 @@ union
 
 parsingExpression
   = pluck
-  / '!' assertion:(annotated/predicate) { //asercion negativa
-    return new n.Assertion("!",assertion);
+  / sym:$"!" assertion:(annotated/predicate) { //asercion negativa
+    return new n.Assertion(sym,assertion);
   }
-  / '&' assertion:(annotated/predicate) { //asercion positiva
-    return new n.Assertion("&",assertion);
+  / sym:$"&" assertion:(annotated/predicate) { //asercion positiva
+    return new n.Assertion(sym,assertion);
   }
   / "!." {
     return new n.Fin();

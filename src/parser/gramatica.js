@@ -318,12 +318,11 @@ function peg$parse(input, options) {
     }
     return new n.Union(exprs, action);
   };
-  var peg$f5 = function(assertion) { //asercion negativa
-    return new n.Assertion("!",assertion);
+  var peg$f5 = function(sym, assertion) { //asercion negativa
+    return new n.Assertion(sym,assertion);
   };
-  var peg$f6 = function(assertion) { //asercion positiva
-    return new n.Assertion("&",assertion);
-
+  var peg$f6 = function(sym, assertion) { //asercion positiva
+    return new n.Assertion(sym,assertion);
   };
   var peg$f7 = function() {
     return new n.Fin();

@@ -239,27 +239,6 @@ export class Assertion {
     }
 }
     
-
-/**
- * @implements {Node}
- */
-export class NegAssertion {
-    /**
-     * @param {(Annotated|Predicate)} assertion
-     */
-    constructor(assertion) {
-        this.assertion = assertion;
-    }
-
-    /**
-     * @template T
-     * @param {Visitor<T>} visitor
-     * @returns {T}
-     */
-    accept(visitor) {
-        return visitor.visitNegAssertion(this);
-    }
-}
     
 
 /**
