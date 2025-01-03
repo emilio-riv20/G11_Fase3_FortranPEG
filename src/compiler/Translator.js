@@ -246,10 +246,11 @@ export default class FortranTranslator {
     }
 
     /**
-     * @param {CST.Assertion} node
+     * @param {CST.PosAssertion} node
      * @this {Visitor}
      */
-    visitAssertion(node) {
+    visitPosAssertion(node) {
+        console.log(node)
         return node.assertion.accept(this);
     }
 
@@ -258,6 +259,7 @@ export default class FortranTranslator {
      * @this {Visitor}
      */
     visitNegAssertion(node) {
+        console.log(node)
         return node.assertion.accept(this);
     }
 

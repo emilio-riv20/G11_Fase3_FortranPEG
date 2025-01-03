@@ -219,9 +219,8 @@ export class Annotated {
 /**
  * @implements {Node}
  */
-export class Assertion {
+export class PosAssertion {
     /**
-     *
      * @param {Node} assertion
      */
     constructor(assertion) {
@@ -234,7 +233,7 @@ export class Assertion {
      * @returns {T}
      */
     accept(visitor) {
-        return visitor.visitAssertion(this);
+        return visitor.visitPosAssertion(this);
     }
 }
     
@@ -244,7 +243,6 @@ export class Assertion {
  */
 export class NegAssertion {
     /**
-     *
      * @param {Node} assertion
      */
     constructor(assertion) {
@@ -267,7 +265,6 @@ export class NegAssertion {
  */
 export class String {
     /**
-     *
      * @param {string} val
 	 * @param {boolean=} isCase
      */
@@ -317,7 +314,6 @@ export class Clase {
  */
 export class Rango {
     /**
-     *
      * @param {string} bottom
 	 * @param {string} top
      */
