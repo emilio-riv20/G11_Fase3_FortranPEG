@@ -251,11 +251,10 @@ export default class FortranTranslator {
      */
     visitAssertion(node) {
         console.log(node)
-        console.log({
+        return Template.Ass({
             sym:node.sym,
             exprs:node.assertion
         })
-        return node.assertion.accept(this)
     }
 
     /**

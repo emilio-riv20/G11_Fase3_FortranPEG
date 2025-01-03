@@ -144,6 +144,24 @@ module parser
             cast = trim(adjustl(cast)) // arr(i) // " "
         end do
     end function arrayToStr
+
+    function assertionPos(str) result(accept)
+        character(len=*) :: str
+        logical :: accept
+        integer :: offset, savePoint
+
+        offset = len(str) - 1
+        if (str /= input(cursor:cursor + offset)) then
+            accept = .false.
+            return
+        end if
+        cursor = cursor + len(str)
+        accept = .true.
+    end function assertionPos
+
+    function assertionNeg(str)result(cursor)
+
+    end function assertionNeg
 end module parser
 `;
 
@@ -452,20 +470,18 @@ export const block = (data) => `
 * }} data
 * @returns
 */
-export const Ass = (data) => 
-    `
-        function PosAss(str)
-            character(len=*) :: str
-            logical :: accept
-            integer :: offset
-
-            offset = len(str) - 1
-            if (str /= input(cursor:cursor + offset)) then
-                accept = .false.
-                return
-            end if
-            cursor = cursor + len(str)
-            accept = .true.
-        end function acceptString
-    `;
+export const Ass = (data) => {
+    switch(data.sym){
+        case '!':
+            console.log("negative assertion")
+            break
+        case '&':
+            console.log("Positive assertion")
+            return `
+                if (.not. assertionPos('fuzz')) cycle
+            `
+        default:
+            break;
+        }
+};
 
