@@ -205,17 +205,16 @@ export const union = (data) => `
  * @returns
  */
 export const strExpr = (data) => {
-    const destinationArray = `${data.destination}_Array`;  
-
     if (data.text === true) {
+        
         return `
                 lexemeStart = cursor
-                allocate(${destinationArray}(0))  ! Inicializar array vacío
+                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
                     cycle
                 else
-                    allocate(${destinationArray}(1))  ! Expande el array
-                    ${destinationArray}(1) = consumeInput()
+                    allocate(${data.destination}(1))  ! Expande el array
+                    ${data.destination}(1) = consumeInput()
                 end if
         `;
     }
@@ -223,10 +222,10 @@ export const strExpr = (data) => {
     if (!data.quantifier) {
         return `
                 lexemeStart = cursor
-                allocate(${destinationArray}(0))  ! Inicializar array vacío
+                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) cycle
-                allocate(${destinationArray}(1))  ! Expande el array
-                ${destinationArray}(1) = consumeInput()
+                allocate(${data.destination}(1))  ! Expande el array
+                ${data.destination}(1) = consumeInput()
         `;
     }
     
@@ -234,50 +233,53 @@ export const strExpr = (data) => {
         case '?': // Cero o una vez
             return `
                 lexemeStart = cursor
-                allocate(${destinationArray}(0))  ! Inicializar array vacío
+                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
                     ! No se hace nada, el array se mantiene vacío
                 else
-                    allocate(${destinationArray}(1))  ! Expande el array
-                    ${destinationArray}(1) = consumeInput()
+                    allocate(${data.destination}(1))  ! Expande el array
+                    ${data.destination}(1) = consumeInput()
                 end if
             `;
     
         case '*': // Cero o más veces
             return `
                 lexemeStart = cursor
-                allocate(${destinationArray}(0))  ! Inicializar array vacío
+                allocate(${data.destination}(0))  ! Inicializar array vacío
                 do
                     if (.not. ${data.expr}) exit
                     ! Expande el array dinámicamente
-                    old_size = size(${destinationArray})
+                    old_size = size(${data.destination})
                     allocate(tempArray(old_size + 1))  ! Array temporal
-                    tempArray(1:old_size) = ${destinationArray}  ! Copiar valores existentes
+                    tempArray(1:old_size) = ${data.destination}  ! Copiar valores existentes
                     tempArray(old_size + 1) = consumeInput()  ! Agregar coincidencia
-                    deallocate(${destinationArray})  ! Liberar el original
-                    ${destinationArray} = tempArray  ! Asignar el nuevo array
+                    deallocate(${data.destination})  ! Liberar el original
+                    ${data.destination} = tempArray  ! Asignar el nuevo array
                 end do
             `;
     
         case '+': // Uno o más veces
             return `
                 lexemeStart = cursor
-                allocate(${destinationArray}(0))  ! Inicializar array vacío
+                allocate(${data.destination}(0))  ! Inicializar array vacío
                 if (.not. ${data.expr}) then
                     cycle  ! Salta si no hay al menos una coincidencia
                 else
                     do
                         ! Expande el array dinámicamente
-                        old_size = size(${destinationArray})
+                        old_size = size(${data.destination})
                         allocate(tempArray(old_size + 1))  ! Array temporal
-                        tempArray(1:old_size) = ${destinationArray}  ! Copiar valores existentes
+                        tempArray(1:old_size) = ${data.destination}  ! Copiar valores existentes
                         tempArray(old_size + 1) = consumeInput()  ! Agregar coincidencia
-                        deallocate(${destinationArray})  ! Liberar el original
-                        ${destinationArray} = tempArray  ! Asignar el nuevo array
+                        deallocate(${data.destination})  ! Liberar el original
+                        ${data.destination} = tempArray  ! Asignar el nuevo array
                         if (.not. ${data.expr}) exit
                     end do
                 end if
             `;
+    
+    
+
         default:
             //Conteo
             let x = data.quantifier;
