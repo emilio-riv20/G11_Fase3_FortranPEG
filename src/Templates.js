@@ -145,24 +145,21 @@ module parser
         end do
     end function arrayToStr
 
-    function assertionPos(str) result(accept)
+    function assertionPos(str) result(success)
+        logical :: success 
         character(len=*) :: str
-        logical :: accept
-        integer :: offset, savePoint
+        integer :: offset
 
-        offset = len(str) - 1
-        if (str /= input(cursor:cursor + offset)) then
-            accept = .false.
-            return
-        end if
-        cursor = cursor + len(str)
-        accept = .true.
+        offset = cursor
+        success = acceptString(str)
+        cursor = offset
+
     end function assertionPos
 
     function assertionNeg(str)result(accept)
         character(len=*) :: str
         logical :: accept
-        integer :: offset, savePoint
+        integer :: offset
 
         offset = len(str) - 1
         if (str == input(cursor:cursor + offset)) then
