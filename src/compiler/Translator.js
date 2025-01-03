@@ -378,40 +378,46 @@ export default class FortranTranslator {
     visitParentesis(node) {
         const currentBlock = this.currentBlock++;
         const parentRule = this.currentRule;
+        if(node.op instanceof CST.Predicate){
+            const x = node.op.accept(this);
+            this.actions.push(x);
+            console.log("Accion",x)
+        }else{
     
-        const innerExpressions = node.op.exprs.map((expr, i) => {
-            this.currentExpr = i; // Actualiza el índice de la expresión actual
-            return expr.accept(this); // Genera el código para cada sub-regla
-        });
-        const blockCode = Template.block({
-            ruleId: parentRule,
-            blockId: currentBlock,
-            exprs: innerExpressions,
-            returnType: getReturnType(
-                getActionId(parentRule, this.currentChoice),
-                this.actionReturnTypes
-            ),
-            exprDeclarations: node.op.exprs.flatMap((election, i) =>
-                election.exprs
-                    .filter((expr) => expr instanceof CST.Pluck)
-                    .map((label, j) => {
-                        const expr = label.labeledExpr.annotatedExpr.expr;
-                        return `${
-                            expr instanceof CST.Identificador
-                                ? getReturnType(
-                                      getActionId(expr.id, i),
-                                      this.actionReturnTypes
-                                  )
-                                : 'character(len=:), allocatable'
-                        } :: expr_${i}_${j}`;
-                    })
-            )
-        });
-    
-        // Almacenar el código del bloque para incluirlo en el módulo
-        this.blocks.push(blockCode);
-    
-        // Retornar la llamada al bloque generado
-        return `${parentRule}_b${currentBlock}_f()`;
+            const innerExpressions = node.op.exprs.map((expr, i) => {
+                this.currentExpr = i; // Actualiza el índice de la expresión actual
+                return expr.accept(this); // Genera el código para cada sub-regla
+            });
+            const blockCode = Template.block({
+                ruleId: parentRule,
+                blockId: currentBlock,
+                exprs: innerExpressions,
+                returnType: getReturnType(
+                    getActionId(parentRule, this.currentChoice),
+                    this.actionReturnTypes
+                ),
+                exprDeclarations: node.op.exprs.flatMap((election, i) =>
+                    election.exprs
+                        .filter((expr) => expr instanceof CST.Pluck)
+                        .map((label, j) => {
+                            const expr = label.labeledExpr.annotatedExpr.expr;
+                            return `${
+                                expr instanceof CST.Identificador
+                                    ? getReturnType(
+                                          getActionId(expr.id, i),
+                                          this.actionReturnTypes
+                                      )
+                                    : 'character(len=:), allocatable'
+                            } :: expr_${i}_${j}`;
+                        })
+                )
+            });
+        
+            // Almacenar el código del bloque para incluirlo en el módulo
+            this.blocks.push(blockCode);
+        
+            // Retornar la llamada al bloque generado
+            return `${parentRule}_b${currentBlock}_f()`;
+        }
     }
 }
